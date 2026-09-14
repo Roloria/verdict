@@ -43,9 +43,10 @@ Issues = "https://github.com/2akouwu/reverify/issues"
 [project.scripts]
 reverify = "reverify.cli:main"
 reverify-mcp = "reverify.mcp_server:run_mcp_server"
+verdict = "verdict.cli:main"
 
 [tool.setuptools]
-packages = ["reverify"]
+packages = ["reverify", "reverify.tests", "verdict", "verdict.tests"]
 
 [tool.setuptools.package-data]
 reverify = ["py.typed", "plugins/opencode/*.js"]

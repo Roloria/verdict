@@ -1,3 +1,17 @@
+> **This is `verdict`**, a fork of [reverify](https://github.com/2akouwu/reverify)
+> (MIT, v0.11.0). reverify checks claims about binaries; verdict points the same
+> claim → deterministic tool → evidence protocol at AI output — reports, docs,
+> diffs, generated files — and turns it into a CI gate.
+>
+> New code lives in `verdict/`; `reverify/` is vendored upstream and never edited.
+> → [VISION.md](VISION.md) · [ITERATION-PLAN.md](ITERATION-PLAN.md) · [ATTRIBUTION.md](ATTRIBUTION.md)
+>
+> ```bash
+> pip install -e ".[dev]"
+> verdict check report.md --claims-file claims.json --base-dir .
+> # exit 0 grounded · 2 refuted · 3 thin evidence · 4 inconclusive (--strict)
+> ```
+
 <h1 align="center">Reverify</h1>
 
 <p align="center">
