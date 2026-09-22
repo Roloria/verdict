@@ -1,0 +1,12 @@
+{
+  "name": "pr-evidence",
+  "version": 1,
+  "description": "The minimum evidence a PR should carry: tests actually ran, and no placeholder markers are left behind. Add a diff_touches claim with your own paths.",
+  "weights": {"command_succeeds": 0.6},
+  "claims": [
+    {"kind": "command_succeeds", "argv": ["pytest", "-q"], "timeout": 300, "note": "tests must pass"},
+    {"kind": "text_absent", "value": "TODO: AI", "note": "no AI placeholder markers"},
+    {"kind": "text_absent", "value": "left as an exercise", "note": "no unfinished handoffs"},
+    {"kind": "text_absent", "pattern": "Lorem ipsum", "regex": true, "note": "no filler text"}
+  ]
+}

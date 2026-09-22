@@ -1,0 +1,32 @@
+{
+  "name": "ai-tells",
+  "version": 1,
+  "description": "Phrases that mark text as model-generated. Conservative by design: fork and edit, do not trust it blindly.",
+  "weights": {"text_absent": 0.4},
+  "claims": [
+    {"kind": "text_absent", "value": "In today's fast-paced landscape"},
+    {"kind": "text_absent", "value": "fast-paced landscape"},
+    {"kind": "text_absent", "value": "game changer"},
+    {"kind": "text_absent", "value": "game-changing"},
+    {"kind": "text_absent", "value": "delve into"},
+    {"kind": "text_absent", "value": "It is important to note that"},
+    {"kind": "text_absent", "value": "It's important to note that"},
+    {"kind": "text_absent", "value": "It is worth noting that"},
+    {"kind": "text_absent", "value": "in the ever-evolving"},
+    {"kind": "text_absent", "value": "ever-evolving landscape"},
+    {"kind": "text_absent", "value": "testament to"},
+    {"kind": "text_absent", "value": "navigate the complexities"},
+    {"kind": "text_absent", "value": "unlock the full potential"},
+    {"kind": "text_absent", "value": "seamlessly integrate"},
+    {"kind": "text_absent", "value": "a testament"},
+    {"kind": "text_absent", "value": "cutting-edge solution"},
+    {"kind": "text_absent", "value": "at the end of the day, what matters"},
+    {"kind": "text_absent", "value": "在当今快速发展的"},
+    {"kind": "text_absent", "value": "值得注意的是，"},
+    {"kind": "text_absent", "value": "综上所述，"},
+    {"kind": "text_absent", "value": "赋能"},
+    {"kind": "text_absent", "value": "深度融合"},
+    {"kind": "text_absent", "value": "全方位提升"},
+    {"kind": "text_absent", "value": "打造闭环"}
+  ]
+}

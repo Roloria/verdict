@@ -50,3 +50,4 @@ packages = ["reverify", "reverify.tests", "verdict", "verdict.tests"]
 
 [tool.setuptools.package-data]
 reverify = ["py.typed", "plugins/opencode/*.js"]
+verdict = ["rules/*.json"]

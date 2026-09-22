@@ -11,15 +11,25 @@ Exit codes (CI-friendly):
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import os
 import sys
-from typing import Any, Dict, List
+import time
+from typing import Any, Dict, List, Optional
 
 from reverify.cli import load_input_bytes
 from reverify.verifier import Claim
 
 from . import __version__
-from .verifier import GateVerifier, TEXT_KINDS
+from .report import load_json, render_file
+from .rules import add_bundle, available, load as load_bundle, load_many
+from .verifier import DEFAULT_ALLOWLIST, GateVerifier, TEXT_KINDS
+
+EXIT_OK = 0
+EXIT_REFUTED = 2
+EXIT_THIN = 3
+EXIT_INCONCLUSIVE = 4
 
 
 def _load_claims(args: argparse.Namespace) -> List[Dict[str, Any]]:
@@ -44,12 +54,43 @@ def _print(results: List[Dict[str, Any]]) -> None:
         print(line)
 
 
+def _load_allowlist(args: argparse.Namespace) -> Optional[List[List[str]]]:
+    """Explicit --allowlist wins; otherwise .verdict/allowlist.json in the repo."""
+    path = args.allowlist
+    if path is None:
+        candidate = os.path.join(args.base_dir, ".verdict", "allowlist.json")
+        path = candidate if os.path.isfile(candidate) else None
+    if path is None:
+        return None  # None = keep the built-in default allowlist
+    with open(path, "r", encoding="utf-8") as f:
+        doc = json.load(f)
+    allow = doc.get("allow", doc) if isinstance(doc, dict) else doc
+    return [list(a) for a in allow]
+
+
+def _append_ledger(path: str, record: Dict[str, Any]) -> None:
+    directory = os.path.dirname(os.path.abspath(path))
+    if directory:
+        os.makedirs(directory, exist_ok=True)
+    with open(path, "a", encoding="utf-8") as f:
+        f.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
+
+
 def cmd_check(args: argparse.Namespace) -> None:
     claims = _load_claims(args)
+    weights: Dict[str, float] = {}
+    if getattr(args, "rules", ""):
+        bundle_claims, weights = load_many(args.rules, args.base_dir)
+        claims = claims + bundle_claims
     if not claims:
-        raise SystemExit("verdict check needs --claims-file or --claim '<json>'")
+        raise SystemExit("verdict check needs --rules, --claims-file or --claim '<json>'")
     data = load_input_bytes(args.target)
-    verifier = GateVerifier(data, base_dir=args.base_dir)
+    verifier = GateVerifier(
+        data,
+        base_dir=args.base_dir,
+        allowlist=_load_allowlist(args),
+        weight_overrides=weights,
+    )
     report = verifier.verify_all(
         [Claim.from_dict(c) for c in claims], min_information=args.min_information
     )
@@ -58,7 +99,13 @@ def cmd_check(args: argparse.Namespace) -> None:
         print(json.dumps(report, indent=2, ensure_ascii=False))
     else:
         print("=== verdict: AI output gate ===")
-        _print(report["results"])
+        shown = report["results"] if args.verbose else [
+            r for r in report["results"] if r["verdict"] not in ("VERIFIED", "OBSERVED")
+        ]
+        _print(shown)
+        hidden = len(report["results"]) - len(shown)
+        if hidden:
+            print(f"  (+{hidden} passing claim(s) hidden, --verbose lists them)")
         print(
             f"\nverified {report['verified']}/{report['total_claims']} "
             f"(refuted {report['refuted']}, inconclusive {report['inconclusive']}, "
@@ -71,12 +118,45 @@ def cmd_check(args: argparse.Namespace) -> None:
         if report["gate_kinds"]:
             print(f"gate kinds: {', '.join(report['gate_kinds'])}")
 
-    if report["refuted"] or report["invalidated"]:
-        sys.exit(2)
-    if not report["informative"]:
-        sys.exit(3)
-    if args.strict and report["inconclusive"]:
-        sys.exit(4)
+    if getattr(args, "report", ""):
+        render_file(report, args.report, target=args.target, rules=getattr(args, "rules", "") or "")
+        if not args.json:
+            print(f"report: {args.report}")
+
+    fail_on = {s.strip() for s in str(args.fail_on).split(",") if s.strip()}
+    if args.strict:
+        fail_on.add("inconclusive")
+
+    code = EXIT_OK
+    if (report["refuted"] or report["invalidated"]) and "refuted" in fail_on:
+        code = EXIT_REFUTED
+    elif not report["informative"] and "thin" in fail_on:
+        code = EXIT_THIN
+    elif report["inconclusive"] and "inconclusive" in fail_on:
+        code = EXIT_INCONCLUSIVE
+
+    if not args.no_ledger:
+        _append_ledger(
+            args.ledger,
+            {
+                "ts": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                "target": os.path.relpath(args.target, args.base_dir)
+                if os.path.exists(args.target)
+                else args.target,
+                "target_sha256": report["receipt"]["binary_sha256"],
+                "claims": report["total_claims"],
+                "verified": report["verified"],
+                "refuted": report["refuted"],
+                "inconclusive": report["inconclusive"],
+                "invalidated": report["invalidated"],
+                "information": report["information"],
+                "min_information": report["min_information"],
+                "grounded": report["grounded"],
+                "rules": getattr(args, "rules", "") or "",
+                "exit": code,
+            },
+        )
+    sys.exit(code)
 
 
 def cmd_kinds(args: argparse.Namespace) -> None:
@@ -84,6 +164,24 @@ def cmd_kinds(args: argparse.Namespace) -> None:
     for k in TEXT_KINDS:
         print(f"  {k}")
     print("\nplus every reverify kind (bytes_at, string_present, functions_equiv, ...)")
+
+
+def cmd_rules(args: argparse.Namespace) -> None:
+    if args.rules_cmd == "list":
+        rows = available(args.base_dir)
+        if not rows:
+            print("no bundles found")
+            return
+        for name, origin, desc in rows:
+            print(f"  {name:<16} {origin:<8} {desc}")
+    elif args.rules_cmd == "show":
+        print(json.dumps(load_bundle(args.name, args.base_dir), indent=2, ensure_ascii=False))
+    elif args.rules_cmd == "add":
+        print(f"vendored -> {add_bundle(args.src, args.base_dir)}")
+
+
+def cmd_report(args: argparse.Namespace) -> None:
+    print(render_file(load_json(args.report_json), args.out, target=args.target or ""))
 
 
 def main() -> None:
@@ -98,11 +196,39 @@ def main() -> None:
     c.add_argument("--base-dir", default=".", help="repo root for file_exists paths")
     c.add_argument("--min-information", type=float, default=1.0)
     c.add_argument("--strict", action="store_true", help="fail on INCONCLUSIVE too")
+    c.add_argument("--fail-on", default="refuted,thin",
+                   help="comma list of refuted|thin|inconclusive that should fail the run")
+    c.add_argument("--rules", help="comma-separated rule bundles (ai-tells, secrets-pii, ...)")
+    c.add_argument("--report", help="also write a single-file HTML report here")
+    c.add_argument("--allowlist", help="JSON file of allowed command argv prefixes")
+    c.add_argument("--ledger", default=".verdict/ledger.jsonl", help="append a run record here")
+    c.add_argument("--no-ledger", action="store_true", help="do not write the ledger")
     c.add_argument("--json", action="store_true")
+    c.add_argument("--verbose", action="store_true", help="list passing claims too")
     c.set_defaults(func=cmd_check)
 
     k = sub.add_parser("kinds", help="list claim kinds")
     k.set_defaults(func=cmd_kinds)
+
+    r = sub.add_parser("rules", help="rule bundles")
+    rs = r.add_subparsers(dest="rules_cmd", required=True)
+    rl = rs.add_parser("list", help="list available bundles")
+    rl.add_argument("--base-dir", default=".")
+    rl.set_defaults(func=cmd_rules)
+    rsh = rs.add_parser("show", help="print a bundle")
+    rsh.add_argument("name")
+    rsh.add_argument("--base-dir", default=".")
+    rsh.set_defaults(func=cmd_rules)
+    ra = rs.add_parser("add", help="vendor a bundle file into .verdict/rules/")
+    ra.add_argument("src")
+    ra.add_argument("--base-dir", default=".")
+    ra.set_defaults(func=cmd_rules)
+
+    rp = sub.add_parser("report", help="render an HTML report from a saved JSON run")
+    rp.add_argument("report_json")
+    rp.add_argument("--out", default="gate.html")
+    rp.add_argument("--target", default="")
+    rp.set_defaults(func=cmd_report)
 
     args = ap.parse_args()
     args.func(args)

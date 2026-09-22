@@ -4,7 +4,7 @@
 > diffs, generated files — and turns it into a CI gate.
 >
 > New code lives in `verdict/`; `reverify/` is vendored upstream and never edited.
-> → [VISION.md](VISION.md) · [ITERATION-PLAN.md](ITERATION-PLAN.md) · [ATTRIBUTION.md](ATTRIBUTION.md)
+> → [USAGE.md](USAGE.md) · [VISION.md](VISION.md) · [ITERATION-PLAN.md](ITERATION-PLAN.md) · [ATTRIBUTION.md](ATTRIBUTION.md)
 >
 > ```bash
 > pip install -e ".[dev]"

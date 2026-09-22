@@ -1,32 +1,31 @@
 # Iteration plan
 
 Owner: Kevin ｜ Started 2026-09-15 ｜ Upstream: 2akouwu/reverify v0.11.0
+Last updated: 2026-09-22 (M1 + M2 landed)
 
 ---
 
-## 0. Where we are (M0, done 2026-09-15)
+## 0. Where we are
 
-| Item | Status |
+| Milestone | Status |
 |---|---|
-| Fork → `Roloria/verdict`, `upstream` remote wired | ✓ |
-| Full upstream suite green on Python 3.13 | ✓ 314 passed / 55 skipped |
-| `verdict/` package, zero edits to `reverify/` | ✓ |
-| Gate kinds: `text_present`, `text_absent`, `file_exists` | ✓ 11 new tests |
-| Own scoring rule set (`gate_weight` / `rescore`) | ✓ |
-| `verdict check` CLI + CI exit codes 0/2/3/4 | ✓ |
-| End-to-end demo (dirty report → exit 2, fixed → exit 0) | ✓ |
+| M0 fork + vertical slice | ✓ 2026-09-15 |
+| M1 code-domain gates + ledger | ✓ 2026-09-22 |
+| M2 rule bundles + HTML report | ✓ 2026-09-22 |
+| M3 CI + distribution | next (9/23–9/28) |
+| M4 content vertical + launch | 10/6–10/19 |
+| M5 team tier | only after M4 shows pull |
 
-Run it:
+Tests: **345 passed / 55 skipped** (314 upstream + 31 verdict).
 
 ```bash
 pip install -e ".[dev]"
-pytest verdict/tests reverify/tests -q      # 325 passed, 55 skipped
-verdict check report.md --claims-file claims.json --base-dir .
+env -u PYTHONPATH pytest verdict/tests reverify/tests -q
+verdict check examples/demo-dirty.md --rules ai-tells,secrets-pii --report examples/gate.html
+# → 4 REFUTED, exit 2, grounded_score 0.53
+verdict check examples/demo-clean.md  --rules ai-tells,secrets-pii
+# → 33/33, exit 0, grounded_score 1.00
 ```
-
-One environment note: under this IDE's shell, `PYTHONPATH` points at a shim whose
-`mkdir` wrapper breaks two upstream rollover tests. Run with
-`env -u PYTHONPATH pytest ...` (or plain terminal) to get a clean 325.
 
 ---
 
@@ -36,126 +35,120 @@ One environment note: under this IDE's shell, `PYTHONPATH` points at a shim whos
    `_check_<kind>` methods. Upstream merges must stay conflict-free.
 2. **No LLM in the verify path.** The judge is a tool, always. An LLM may
    *propose* claims (M4), never decide them.
-3. **Every gate emits evidence**, not a boolean. Evidence carries what was
-   actually observed, so the report can be replayed.
+3. **Every gate emits evidence**, not a boolean.
 4. **Information, not pass rate.** A set that verifies but says nothing must fail
-   (exit 3). This is the moat; never let it regress.
-5. **MIT forever.** Upstream is MIT. No open-core license split — monetisation is
-   hosted-only (see VISION.md).
+   (exit 3). See §2.5 — this already bit us once and it will again.
+5. **MIT forever.** No open-core license split; monetisation is hosted-only.
 
 ---
 
 ## 2. Milestones
 
-### M1 · Code-domain gates + evidence ledger — week 1 (9/15–9/21)
+### M0 · Fork + vertical slice — done 2026-09-15
 
-Goal: a gate that can run on a real repo and on a PR.
+Fork, upstream suite green, `verdict/` package, `text_present` / `text_absent` /
+`file_exists`, own scoring rule set, `verdict check` with exit codes.
 
-Tasks
-- [ ] `command_succeeds` gate: run an allow-listed command (`pytest`, `tsc`,
-      `eslint`, `node --check`) with a timeout; evidence = exit code, stdout
-      sha256, wall time. This turns "the AI says tests pass" into a claim.
-      - allowlist file `.verdict/allowlist.json`, command must match an entry
-        exactly; anything unlisted returns INCONCLUSIVE (never executes).
-      - reuse the discipline from `unlazy`: bind cwd + resolved binary path,
-        record a definition digest so a changed command invalidates old evidence.
-- [ ] `diff_touches` gate: PR diff must touch the paths the AI claims it changed.
-      Evidence = the matched file list. (Kills "I refactored X" without X.)
-- [ ] `.verdict/ledger.jsonl` — append one line per gate run (ts, target sha256,
-      claim count, information, exit code). This is the future product asset.
-- [ ] `--fail-on {refuted,thin,inconclusive}` flag so teams choose strictness.
+### M1 · Code-domain gates + evidence ledger — done 2026-09-22
 
-Acceptance
-```bash
-verdict check . --claims-file .verdict/claims.json --base-dir .   # exit 0
-# invert one claim → exit 2 ; remove half the claims → exit 3
-cat .verdict/ledger.jsonl | wc -l   # grows by 1 per run
-```
+- [x] `command_succeeds`: allow-list only, argv (never a shell string), timeout,
+      evidence = exit code + stdout/stderr sha256 + duration. Turns "the AI says
+      tests pass" into a claim. Unlisted → INCONCLUSIVE, never executed.
+- [x] `diff_touches`: claimed paths must appear in `git diff --name-only <base>`;
+      file or directory matching, `mode: all|any`.
+- [x] `.verdict/ledger.jsonl`: one JSON line per run (ts, target sha256, counts,
+      information, exit).
+- [x] `--fail-on {refuted,thin,inconclusive}` so teams pick their strictness.
+- [x] `--allowlist` from `.verdict/allowlist.json`, cwd confined to the repo.
 
-### M2 · Rule bundles + HTML report — week 2 (9/22–9/28)
+### M2 · Rule bundles + HTML report — done 2026-09-22
 
-Goal: stop hand-writing claims.json; ship the scorecard page.
+- [x] Bundle format (JSON): `name`, `version`, `description`, `claims`, `weights`.
+      Resolution: `.verdict/rules/` → built-ins → literal path.
+- [x] Shipped bundles: `ai-tells` (24 phrases, EN+ZH), `secrets-pii` (9 regexes),
+      `pr-evidence` (tests ran, no placeholders).
+- [x] `--rules a,b` expands bundles and merges their weight overrides;
+      `--rules` + `--claims-file` compose.
+- [x] `verdict rules list|show|add` — `add` vendors a team bundle.
+- [x] `verdict check --report gate.html` and `verdict report <json> --out`.
+      Single-file HTML, no CDN, light/dark, evidence per row, replay command.
+- [x] `--verbose` / default hides passing rows (33-claim runs were unreadable).
 
-Tasks
-- [ ] Rule-bundle format `verdict.rules.yaml`: named bundle → list of claims +
-      weight overrides. Ship three: `ai-tells`, `secrets-pii`, `pr-evidence`.
-- [ ] `verdict check --rules ai-tells,secrets-pii <target>` expands bundles into
-      claims; `--list-rules` shows them.
-- [ ] `verdict report --out gate.html` — single-file HTML, no CDN: gate list with
-      verdict + evidence, information gauge, replay command per claim.
-- [ ] `verdict rules add <owner/repo>` — vendor a community bundle into
-      `.verdict/rules/` (the anti-slop "meant to be vendored" model).
+### M2.5 · Design defect found and fixed — 2026-09-22
 
-Acceptance: run against this repo, open `gate.html`, every FAIL row shows the
-observed evidence and a copy-pasteable replay command.
+Running a 33-claim bundle scored `information = 19`. Everything passed, so the
+"thin evidence" gate could never fire: **many easy claims were worth more than a
+few hard ones**, the opposite of what the metric exists to prevent.
 
-### M3 · CI + distribution — week 3 (9/29–10/5, travel week, low intensity)
+Fix: harmonic decay inside a claim kind — the Nth verified claim of a kind counts
+`1/N`. Same run now scores 2.5. REFUTED claims keep full weight so a failure
+still reads as "this rule matters".
 
-Goal: it installs and fails a build without anyone holding its hand.
+Carry forward: **`--min-information` is bundle-size sensitive.** Shipped bundles
+land around 2.5 against the default `1.0`; a team writing 100 claims must raise
+it. Document it, do not "fix" it by inflating weights.
 
-Tasks
-- [ ] GitHub Action `verdict-gate@v1` (composite: setup-python → pipx → run →
-      annotate). Publish to Marketplace.
-- [ ] Rename dist to `verdict-gate`, publish to PyPI. Keep `reverify` entry
-      points intact for upstream compatibility.
-- [ ] MCP server: expose `verify_claims` so Claude Code / Codex can gate their
-      own output mid-run (mirror `reverify/mcp_server.py`).
-- [ ] SKILL.md for the skills.sh ecosystem — the CLI and the skill are the same
-      rule set, which no competitor has.
+### M3 · CI + distribution — 9/23–9/28 (travel starts 9/25: front-load)
 
-Note: travel week — keep to release plumbing and docs, no large refactors.
+Two clear days, then low bandwidth. Order by what unblocks strangers:
 
-### M4 · Content vertical + launch — week 4–5 (10/6–10/19)
+- [ ] GitHub Action `verdict-gate@v1` (composite: setup-python → `pip install
+      verdict-gate` → run → PR annotation). Marketplace listing. **9/23**
+- [ ] Rename dist `reverify` → `verdict-gate`, keep the `reverify` console
+      scripts for upstream compatibility, publish to PyPI. **9/23**
+- [ ] Commit `.verdict/` defaults here so a clone gates itself (own
+      `claims.json` + `allowlist.json`). **9/24**
+- [ ] MCP server exposing `verify_claims` (mirror `reverify/mcp_server.py`) so
+      agents can gate their own output mid-run. Travel week.
+- [ ] `SKILL.md` for the skills.sh ecosystem: same rule set, agent surface.
+      Travel week.
+- [ ] GitHub Pages: publish `examples/gate.html` as a live sample report. Cheap,
+      high leverage for the launch post.
 
-Goal: prove the second vertical (docs/reports) and get distribution.
+### M4 · Content vertical + launch — 10/6–10/19
 
-Tasks
-- [ ] `citation_resolves` gate: every `path:line` or URL in a report must resolve
-      in-repo. The single highest-value fact-check gate for generated docs.
-- [ ] `number_matches_source` gate: a figure quoted in prose must appear in the
-      named source file. (Prototype: regex + file read + evidence excerpt.)
-- [ ] AI-tell lexicon v1: self-authored, with the research notes from
-      `sepia` / `hallmark` / `ponytail` read as input, not copied.
-- [ ] Launch post: lead with "LLM judges agree with slop labels at chance" +
-      the demo GIF (dirty → exit 2, fixed → exit 0). Post to HN, r/LocalLLaMA,
-      and the skills.sh ecosystem.
+- [ ] `citation_resolves`: every `path:line` or URL in a generated report must
+      resolve in-repo. Highest-value fact-check gate for docs.
+- [ ] `number_matches_source`: a figure quoted in prose must appear in the named
+      source file (regex + file read + evidence excerpt).
+- [ ] AI-tell lexicon v2, informed by (not copied from) `sepia` / `hallmark` /
+      `ponytail`, with a false-positive note per entry.
+- [ ] Launch post: "LLM judges agree with slop labels at chance" + the dirty vs
+      clean demo. HN, r/LocalLLaMA, skills.sh ecosystem.
 
 ### M5 · Team tier — week 6+ (only after M4 shows pull)
 
-- Rule sync (private bundles), report history off `ledger.jsonl`, SSO, audit
-  export (PDF/CSV of evidence per gate run).
-- Pricing ¥199 / ¥499 / ¥999. Do not build this before 20 outside stars or 3
-  teams asking.
+Rule sync, report history off `ledger.jsonl`, SSO, audit export. ¥199/499/999.
+Do not build before ~20 outside stars or 3 teams asking.
 
 ---
 
-## 3. Open decisions (need your call before M2)
+## 3. Decisions
 
-| # | Decision | Options | Lean |
-|---|---|---|---|
-| 1 | Default strictness | fail on refuted only vs also on thin evidence | also fail on thin (exit 3) — it is the differentiator, but it will annoy people on day 1 |
-| 2 | Rule bundle source of truth | vendored files in repo vs registry | vendored first, registry in M5 |
-| 3 | `command_succeeds` allowlist | shipped default allowlist vs user-authored only | ship a minimal default (`pytest`, `tsc`, `eslint`, `node --check`) and let teams extend |
-| 4 | Talk to upstream? | silent fork vs open an issue declaring intent | open the issue — cheap, polite, and 2akouwu may point at overlap in their ROADMAP §5 |
+| # | Decision | Outcome |
+|---|---|---|
+| 1 | Fail on thin evidence by default? | **Yes** (default `--fail-on refuted,thin`). It is the differentiator; teams that hate it pass `--fail-on refuted`. |
+| 2 | Bundle source of truth | Vendored files in `.verdict/rules/`; registry deferred to M5 |
+| 3 | `command_succeeds` allowlist | Minimal shipped default + team extension. Never auto-approve. |
+| 4 | Talk to upstream? | **Not yet.** Revisit when we publish: an issue explaining the fork (and the overlap with their ROADMAP §5) is worth more once there is something to look at. |
 
 ---
 
 ## 4. Risks
 
-| Risk | Why it matters | Mitigation |
+| Risk | Why | Mitigation |
 |---|---|---|
-| Upstream ships the same thing | reverify ROADMAP §5 already says "toward verified coding" | Our layer is output quality (content, compliance, evidence); theirs is behavioural equivalence. Posture: different vertical, and we say so publicly. |
-| `command_succeeds` is a footgun | executing commands from a claim file is RCE-shaped | allowlist + INCONCLUSIVE on no match + no shell (`shell=False`, argv list) + timeout + cwd bind. Never auto-approve. |
-| Exit 3 (thin evidence) false positives | teams disable the gate entirely | ship bundles that comfortably clear the bar; make `min_information` configurable and show the number in the report |
-| Star-chasing skills beat us | ponytail 138k on vibes alone | we are not competing for skill installs; the CLI + CI + report is a different product surface |
-| Maintenance while travelling | 9/25–10/5 low bandwidth | M3 is deliberately release plumbing only |
+| Upstream ships the same thing | reverify ROADMAP §5 says "toward verified coding" | Theirs is behavioural equivalence; ours is output quality (content, compliance, evidence). Say so publicly. |
+| `command_succeeds` is RCE-shaped | executing commands from a claim file | argv-only, allowlist, no shell, INCONCLUSIVE when unlisted, cwd confined, timeout |
+| `--min-information` confuses teams | the right value depends on bundle size | print the number and the threshold on every run; documented in USAGE.md |
+| AI-tell lexicon false positives | "值得注意的是" appears in normal Chinese prose | bundles are vendored and editable; ship conservative, document as opinionated |
+| Thin bandwidth 9/25–10/5 | travel | M3 front-loaded; travel week is MCP + SKILL.md + Pages only |
 
 ---
 
-## 5. Immediate next actions (this week)
+## 5. Next actions, in order
 
-- [x] Fork, tests green, vertical slice
-- [ ] `command_succeeds` + allowlist + tests (M1 first task, ~half day)
-- [ ] `diff_touches` (M1, ~2h — needs `git diff --name-only` against merge-base)
-- [ ] `.verdict/ledger.jsonl` write path (M1, ~1h)
-- [ ] Decide #1 and #4 in §3
+1. GitHub Action `verdict-gate@v1` + PyPI rename/publish (9/23)
+2. Commit `.verdict/` defaults in this repo (9/24)
+3. Pages sample report + MCP server (travel week)
+4. Then M4: `citation_resolves`, `number_matches_source`

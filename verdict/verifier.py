@@ -10,6 +10,10 @@ Claim kinds added here (v0.1, the document/report vertical):
   text_absent   — the output must NOT contain it (AI-tell words, secrets, PII)
   file_exists   — a path the AI says it created exists, is inside the repo, and
                   is at least N bytes
+  command_succeeds — an allow-listed command must exit 0 (never shells out to
+                  anything unlisted; unlisted means INCONCLUSIVE, never executed)
+  diff_touches  — the paths the AI says it changed must actually appear in the
+                  git diff against a base ref
 
 Scoring: reverify's ``summarize`` gives unknown kinds a flat 0.3. ``rescore``
 applies verdict's own weight table (this is the product's rule set, so it lives
@@ -18,9 +22,13 @@ here, not upstream).
 
 from __future__ import annotations
 
+import hashlib
 import os
 import re
-from typing import Any, Dict, List, Optional, Tuple
+import shutil
+import subprocess
+import time
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from reverify.verifier import (
     INCONCLUSIVE,
@@ -33,7 +41,13 @@ from reverify.verifier import (
     Verifier,
 )
 
-TEXT_KINDS = ("text_present", "text_absent", "file_exists")
+TEXT_KINDS = (
+    "text_present",
+    "text_absent",
+    "file_exists",
+    "command_succeeds",
+    "diff_touches",
+)
 
 # How much a claim says when it verifies. Higher = harder to satisfy by accident.
 # Deliberately below the bar for "this file exists" (easy) and above it for
@@ -42,7 +56,22 @@ _GATE_WEIGHTS = {
     "text_present": 0.45,
     "text_absent": 0.40,
     "file_exists": 0.20,
+    "command_succeeds": 0.60,  # a test really ran; the strongest everyday claim
+    "diff_touches": 0.50,
 }
+
+# Commands verdict will execute out of the box. Anything else is INCONCLUSIVE
+# until a team allow-lists it. Entries are argv prefixes.
+DEFAULT_ALLOWLIST: Sequence[Sequence[str]] = (
+    ("pytest",),
+    ("python", "-m", "pytest"),
+    ("node", "--check"),
+    ("npx", "tsc"),
+    ("tsc", "--noEmit"),
+    ("eslint",),
+    ("ruff",),
+    ("git", "diff"),
+)
 _REGEX_BONUS = 0.10
 _SPECIFICITY_BONUS = 0.10  # an exact expected count says more than "at least one"
 
@@ -100,12 +129,28 @@ def _resolve_path(base_dir: str, raw: str) -> Optional[str]:
     return None
 
 
+def _path_touched(claimed: str, changed: List[str]) -> bool:
+    """True when a claimed path (file or directory) appears in the changed set."""
+    c = str(claimed).strip().rstrip("/")
+    if not c:
+        return False
+    return any(ch == c or ch.startswith(c + "/") or c.startswith(ch + "/") for ch in changed)
+
+
 class GateVerifier(Verifier):
     """reverify's Verifier plus gates on text and repository files."""
 
-    def __init__(self, data: bytes, base_dir: str = ".") -> None:
+    def __init__(
+        self,
+        data: bytes,
+        base_dir: str = ".",
+        allowlist: Optional[Sequence[Sequence[str]]] = None,
+        weight_overrides: Optional[Dict[str, float]] = None,
+    ) -> None:
         super().__init__(data)
         self.base_dir = base_dir
+        self.allowlist = list(DEFAULT_ALLOWLIST) if allowlist is None else [list(a) for a in allowlist]
+        self.weight_overrides = dict(weight_overrides or {})
         self._text_cache: Optional[str] = None
         self._enc_cache: str = "utf-8"
 
@@ -182,6 +227,123 @@ class GateVerifier(Verifier):
             return REFUTED, evidence, f"file is {size} bytes, claim needs at least {floor}"
         return VERIFIED, evidence, f"exists ({size} bytes)"
 
+    # -- execution gates (the dangerous ones) --------------------------------
+
+    def _allowlisted(self, argv: List[str]) -> bool:
+        return any(list(argv[: len(entry)]) == list(entry) for entry in self.allowlist)
+
+    def _check_command_succeeds(self, p: Dict[str, Any]):
+        """Claim: this allow-listed command exits as expected.
+
+        Turns "the AI says the tests pass" into a claim with an exit code as
+        evidence. Never shells out: argv only, and anything not allow-listed is
+        INCONCLUSIVE rather than executed.
+        """
+        argv = p.get("argv")
+        if argv is None:
+            raise ClaimError("command_succeeds requires 'argv'")
+        if isinstance(argv, str):
+            raise ClaimError("argv must be a list of arguments (no shell strings)")
+        argv = [str(a) for a in argv]
+        if not argv:
+            raise ClaimError("argv is empty")
+
+        cwd_raw = str(p.get("cwd", "."))
+        cwd = _resolve_path(self.base_dir, cwd_raw)
+        timeout = float(p.get("timeout", 120))
+        want_exit = int(p.get("expect_exit", 0))
+        digest = hashlib.sha256(repr([argv, cwd_raw, timeout, want_exit]).encode()).hexdigest()[:16]
+        evidence: Dict[str, Any] = {
+            "argv": argv,
+            "cwd": cwd_raw,
+            "definition_digest": digest,
+            "allowlisted": self._allowlisted(argv),
+            "timeout": timeout,
+        }
+        if cwd is None:
+            return REFUTED, evidence, "cwd escapes the repository root"
+        if not os.path.isdir(cwd):
+            return INCONCLUSIVE, evidence, "cwd is not a directory"
+        if not self._allowlisted(argv):
+            return (
+                INCONCLUSIVE,
+                evidence,
+                "command is not allow-listed; refusing to execute "
+                "(add it to .verdict/allowlist.json)",
+            )
+        exe = shutil.which(argv[0])
+        evidence["resolved"] = exe
+        if exe is None:
+            return INCONCLUSIVE, evidence, f"{argv[0]!r} is not on PATH"
+
+        started = time.time()
+        try:
+            proc = subprocess.run(
+                argv, cwd=cwd, shell=False, timeout=timeout, capture_output=True
+            )
+        except subprocess.TimeoutExpired:
+            return INCONCLUSIVE, evidence, f"timed out after {timeout}s"
+        except OSError as exc:
+            return INCONCLUSIVE, evidence, f"could not execute: {exc}"
+        out = proc.stdout.decode("utf-8", "replace")
+        err = proc.stderr.decode("utf-8", "replace")
+        evidence.update(
+            {
+                "exit_code": proc.returncode,
+                "duration_ms": int((time.time() - started) * 1000),
+                "stdout_sha256": hashlib.sha256(out.encode()).hexdigest(),
+                "stderr_sha256": hashlib.sha256(err.encode()).hexdigest(),
+                "stdout_head": out[:400],
+                "stderr_head": err[:400],
+            }
+        )
+        if proc.returncode != want_exit:
+            return REFUTED, evidence, f"exit {proc.returncode}, expected {want_exit}"
+        want_out = p.get("expect_stdout")
+        if want_out and not re.search(str(want_out), out):
+            return REFUTED, evidence, f"stdout does not match /{want_out}/"
+        return VERIFIED, evidence, f"exit {proc.returncode} in {evidence['duration_ms']}ms"
+
+    def _check_diff_touches(self, p: Dict[str, Any]):
+        """Claim: the git diff against ``base`` really touches these paths."""
+        paths = p.get("paths")
+        if paths is None and "path" in p:
+            paths = [p["path"]]
+        if not paths:
+            raise ClaimError("diff_touches requires 'paths'")
+        paths = [str(x) for x in paths]
+        base = str(p.get("base", "HEAD"))
+        mode = str(p.get("mode", "all"))
+        git = shutil.which("git")
+        evidence: Dict[str, Any] = {"claimed": paths, "base": base, "mode": mode}
+        if git is None:
+            return INCONCLUSIVE, evidence, "git is not available"
+        try:
+            proc = subprocess.run(
+                [git, "-C", self.base_dir, "diff", "--name-only", base],
+                shell=False,
+                timeout=30,
+                capture_output=True,
+            )
+        except (subprocess.TimeoutExpired, OSError) as exc:
+            return INCONCLUSIVE, evidence, f"git diff failed: {exc}"
+        if proc.returncode != 0:
+            evidence["stderr_head"] = proc.stderr.decode("utf-8", "replace")[:200]
+            return INCONCLUSIVE, evidence, "git diff failed (not a repo, or bad base?)"
+
+        changed = [l.strip() for l in proc.stdout.decode("utf-8", "replace").splitlines() if l.strip()]
+        matched = [c for c in paths if _path_touched(c, changed)]
+        missing = [c for c in paths if c not in matched]
+        evidence.update({"changed_count": len(changed), "changed_sample": changed[:20],
+                         "matched": matched, "missing": missing})
+        if mode == "any":
+            if matched:
+                return VERIFIED, evidence, f"diff touches {len(matched)} of the claimed paths"
+            return REFUTED, evidence, "diff touches none of the claimed paths"
+        if missing:
+            return REFUTED, evidence, f"claimed paths absent from the diff: {', '.join(missing)}"
+        return VERIFIED, evidence, f"diff touches all {len(paths)} claimed path(s)"
+
     # -- scoring ------------------------------------------------------------
 
     def verify_all(
@@ -191,17 +353,17 @@ class GateVerifier(Verifier):
         min_information: float = 1.0,
     ) -> Dict[str, Any]:
         report = super().verify_all(claims, facts=facts, min_information=min_information)
-        return rescore(report, min_information=min_information)
+        return rescore(report, min_information=min_information, overrides=self.weight_overrides)
 
 
-def gate_weight(result: Dict[str, Any]) -> float:
+def gate_weight(result: Dict[str, Any], overrides: Optional[Dict[str, float]] = None) -> float:
     """verdict's own weight table for the kinds it owns."""
     kind = result["kind"]
     p = result.get("params", {}) or {}
     ev = result.get("evidence", {}) or {}
     if ev.get("self_referential"):
         return 0.0
-    base = _GATE_WEIGHTS.get(kind, 0.3)
+    base = float((overrides or {}).get(kind, _GATE_WEIGHTS.get(kind, 0.3)))
     if p.get("regex") or "pattern" in p and "value" not in p:
         base += _REGEX_BONUS
     if kind == "text_present" and any(k in p for k in ("count", "min_count", "max_count")):
@@ -214,7 +376,11 @@ def gate_weight(result: Dict[str, Any]) -> float:
     return round(min(1.0, base) * rarity, 3)
 
 
-def rescore(report: Dict[str, Any], min_information: float = 1.0) -> Dict[str, Any]:
+def rescore(
+    report: Dict[str, Any],
+    min_information: float = 1.0,
+    overrides: Optional[Dict[str, float]] = None,
+) -> Dict[str, Any]:
     """Re-apply verdict's weights to the gate kinds and refresh the summary."""
     results = report.get("results", [])
     for r in results:
@@ -223,7 +389,22 @@ def rescore(report: Dict[str, Any], min_information: float = 1.0) -> Dict[str, A
         if r["verdict"] in _SCORE_PENALTY or r.get("duplicate") or r.get("trivial") or r.get("echoed") or r.get("known"):
             r["weight"] = 0.0
         else:
-            r["weight"] = gate_weight(r)
+            r["weight"] = gate_weight(r, overrides)
+
+    # Marginal decay inside a kind. Without it, a 33-claim bundle that all pass
+    # scores as "informative" no matter how little it actually said — the exact
+    # gaming the information metric exists to prevent. The Nth claim of a kind
+    # counts for 1/N (harmonic): 10 claims of a kind score like ~3, not like 10.
+    seen: Dict[str, int] = {}
+    for r in sorted(results, key=lambda x: -(x.get("weight") or 0.0)):
+        # Only VERIFIED claims decay: a REFUTED claim keeps its full weight so a
+        # failure still reads as "this rule matters", not as a small number.
+        if r["kind"] not in TEXT_KINDS or not r["weight"] or r["verdict"] != VERIFIED:
+            continue
+        i = seen.get(r["kind"], 0)
+        seen[r["kind"]] = i + 1
+        r["weight_raw"] = r["weight"]
+        r["weight"] = round(r["weight"] / (i + 1), 3)
 
     scored = [r for r in results if r["verdict"] in (VERIFIED, REFUTED, INCONCLUSIVE)]
     counted = [r for r in scored if not (r.get("duplicate") or r.get("trivial") or r.get("echoed") or r.get("known"))]
