@@ -1,6 +1,8 @@
 # Usage
 
 ```bash
+pip install verdict-gate            # from PyPI
+# or, from a checkout:
 pip install -e ".[dev]"
 pytest verdict/tests reverify/tests -q     # 345 passed, 55 skipped
 ```
@@ -45,6 +47,20 @@ Shipped: `ai-tells` (24 phrases), `secrets-pii` (9 regexes), `pr-evidence`
 (tests ran, no placeholders).
 
 ## 3. In CI
+
+```yaml
+- uses: Roloria/verdict-gate@v1
+  with:
+    target: docs/report.md
+    rules: ai-tells,secrets-pii
+    min-information: "2"          # bundles land near 2.5; tune to your rule count
+    report: gate.html             # optional
+```
+
+Outputs: `exit-code`, `information`, `grounded`. The run is also written to the
+job summary as a table.
+
+Or plain CLI:
 
 ```yaml
 - run: pipx install verdict-gate

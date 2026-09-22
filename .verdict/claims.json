@@ -1,0 +1,7 @@
+[
+  {"kind": "file_exists", "path": "VISION.md", "min_bytes": 500, "note": "the thesis stays written down"},
+  {"kind": "file_exists", "path": "USAGE.md", "min_bytes": 500, "note": "usage stays written down"},
+  {"kind": "file_exists", "path": "action.yml", "min_bytes": 200, "note": "the CI action is present"},
+  {"kind": "text_absent", "pattern": "sk-[A-Za-z0-9]{20,}", "regex": true, "note": "no keys in tracked docs"},
+  {"kind": "command_succeeds", "argv": ["pytest", "-q", "verdict/tests"], "timeout": 300, "note": "the gate suite passes"}
+]

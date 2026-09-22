@@ -1,0 +1,44 @@
+name: verdict gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  self-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+
+      - name: clean report must pass
+        run: verdict check examples/demo-clean.md --rules ai-tells,secrets-pii --base-dir . --no-ledger
+
+      - name: sloppy report must fail with exit 2
+        run: |
+          set +e
+          verdict check examples/demo-dirty.md --rules ai-tells,secrets-pii --base-dir . --no-ledger
+          code=$?
+          set -e
+          if [ "$code" -ne 2 ]; then
+            echo "expected exit 2 (refuted), got $code"
+            exit 1
+          fi
+
+      - name: gate this repo's own artifacts
+        run: verdict check ITERATION-PLAN.md --claims-file .verdict/claims.json --base-dir . --no-ledger
+
+      - name: verdict tests
+        run: pytest verdict/tests -q
+
+      - name: upstream tests must stay green
+        run: pytest reverify/tests -q

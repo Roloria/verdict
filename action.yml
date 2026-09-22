@@ -1,0 +1,115 @@
+name: verdict-gate
+description: >-
+  Gate AI output on evidence. Every assertion is bound to a check a deterministic
+  tool can run; the job fails on refuted claims (2), thin evidence (3), or — if
+  asked — anything inconclusive (4).
+branding:
+  icon: check-circle
+  color: green
+
+inputs:
+  target:
+    description: File to gate
+    required: true
+  rules:
+    description: Comma-separated rule bundles (ai-tells, secrets-pii, pr-evidence)
+    required: false
+    default: ""
+  claims-file:
+    description: JSON claim file; composes with rules
+    required: false
+    default: ""
+  base-dir:
+    description: Repository root used by path and diff gates
+    required: false
+    default: "."
+  min-information:
+    description: Evidence weight the verified set must reach
+    required: false
+    default: "1"
+  fail-on:
+    description: Comma list of refuted|thin|inconclusive that fail the job
+    required: false
+    default: "refuted,thin"
+  version:
+    description: verdict-gate version to install (empty = latest)
+    required: false
+    default: ""
+  report:
+    description: Also write a single-file HTML report to this path
+    required: false
+    default: ""
+
+outputs:
+  exit-code:
+    description: verdict exit code (0 grounded, 2 refuted, 3 thin, 4 inconclusive)
+    value: ${{ steps.gate.outputs.exit-code }}
+  information:
+    description: Evidence weight of the verified claims
+    value: ${{ steps.gate.outputs.information }}
+  grounded:
+    description: "true when nothing was refuted and the evidence is thick enough"
+    value: ${{ steps.gate.outputs.grounded }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: install verdict
+      shell: bash
+      run: |
+        spec="verdict-gate"
+        if [ -n "${{ inputs.version }}" ]; then spec="verdict-gate==${{ inputs.version }}"; fi
+        python -m pip install --upgrade pip
+        python -m pip install "$spec"
+
+    - name: run gates
+      id: gate
+      shell: bash
+      env:
+        V_TARGET: ${{ inputs.target }}
+        V_RULES: ${{ inputs.rules }}
+        V_CLAIMS: ${{ inputs.claims-file }}
+        V_BASE: ${{ inputs.base-dir }}
+        V_MIN: ${{ inputs.min-information }}
+        V_FAIL: ${{ inputs.fail-on }}
+        V_REPORT: ${{ inputs.report }}
+      run: |
+        set +e
+        args=(check "$V_TARGET" --base-dir "$V_BASE" --min-information "$V_MIN" --fail-on "$V_FAIL")
+        [ -n "$V_RULES" ] && args+=(--rules "$V_RULES")
+        [ -n "$V_CLAIMS" ] && args+=(--claims-file "$V_CLAIMS")
+        [ -n "$V_REPORT" ] && args+=(--report "$V_REPORT")
+        verdict "${args[@]}" --json > verdict-run.json
+        code=$?
+        V_EXIT=$code python - <<'PY'
+        import json, os
+        code = os.environ.get("V_EXIT", "0")
+        d = json.load(open("verdict-run.json"))
+        rows = "\n".join(
+            f"| {r['verdict']} | `{r['kind']}` | {r.get('weight', 0)} | {r.get('detail','')} |"
+            for r in d.get("results", [])
+        )
+        summary = [
+            "## verdict gate",
+            "",
+            f"information **{d.get('information')}** / min {d.get('min_information')} "
+            f"· grounded_score **{d.get('grounded_score')}** · exit **{code}**",
+            "",
+            "| verdict | gate | weight | detail |",
+            "|---|---|---|---|",
+            rows,
+        ]
+        with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as f:
+            f.write("\n".join(summary) + "\n")
+        for r in d.get("results", []):
+            print(f"[{r['verdict']}] {r['kind']}: {r.get('detail','')}")
+        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as f:
+            f.write(f"exit-code={code}\n")
+            f.write(f"information={d.get('information')}\n")
+            f.write(f"grounded={str(bool(d.get('grounded'))).lower()}\n")
+        PY
+        exit $code

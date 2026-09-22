@@ -3,17 +3,18 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "reverify"
-version = "0.11.0"
-description = "Stop your AI from making things up: it proposes, deterministic tools decide. Every claim verified or refuted against ground truth, with evidence; grounded facts survive context resets. Proven first on the hardest case, reading binaries. MCP server + CLI."
+name = "verdict-gate"
+version = "0.12.0"
+description = "A gate AI output has to walk through: every assertion is bound to a check a deterministic tool can run, with evidence, and a CI exit code. Fork of reverify (MIT) — reverify's binary claim protocol, aimed at reports, docs, diffs and generated code."
 readme = "README.md"
 requires-python = ">=3.8"
 license = { text = "MIT" }
-authors = [{ name = "2akouwu" }]
+authors = [{ name = "2akouwu" }, { name = "Kevin Wang" }]
 keywords = [
     "anti-hallucination", "hallucination", "grounding", "verification", "llm", "ai-agents",
     "context-engineering", "mcp", "reverse-engineering", "binary-analysis", "disassembler",
     "frida", "protobuf", "malware-analysis", "ctf",
+    "ai-slop", "quality-gate", "ci", "code-review", "fact-check", "evidence",
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -22,6 +23,8 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Topic :: Security",
     "Topic :: Software Development :: Disassemblers",
+    "Topic :: Software Development :: Quality Assurance",
+    "Topic :: Software Development :: Testing",
 ]
 dependencies = []
 
@@ -36,9 +39,10 @@ full = ["capstone>=5.0", "unicorn>=2.0", "lief>=0.14", "z3-solver>=4.12"]
 dev = ["pytest>=7.0"]
 
 [project.urls]
-Homepage = "https://github.com/2akouwu/reverify"
-Repository = "https://github.com/2akouwu/reverify"
-Issues = "https://github.com/2akouwu/reverify/issues"
+Homepage = "https://github.com/Roloria/verdict"
+Repository = "https://github.com/Roloria/verdict"
+Issues = "https://github.com/Roloria/verdict/issues"
+Upstream = "https://github.com/2akouwu/reverify"
 
 [project.scripts]
 reverify = "reverify.cli:main"

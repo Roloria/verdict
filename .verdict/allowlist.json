@@ -1,0 +1,12 @@
+{
+  "allow": [
+    ["pytest"],
+    ["python", "-m", "pytest"],
+    ["node", "--check"],
+    ["npx", "tsc"],
+    ["tsc", "--noEmit"],
+    ["eslint"],
+    ["ruff"],
+    ["git", "diff"]
+  ]
+}

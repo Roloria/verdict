@@ -92,12 +92,16 @@ it. Document it, do not "fix" it by inflating weights.
 
 Two clear days, then low bandwidth. Order by what unblocks strangers:
 
-- [ ] GitHub Action `verdict-gate@v1` (composite: setup-python → `pip install
-      verdict-gate` → run → PR annotation). Marketplace listing. **9/23**
-- [ ] Rename dist `reverify` → `verdict-gate`, keep the `reverify` console
-      scripts for upstream compatibility, publish to PyPI. **9/23**
-- [ ] Commit `.verdict/` defaults here so a clone gates itself (own
-      `claims.json` + `allowlist.json`). **9/24**
+- [x] `action.yml` — composite action: setup-python → `pip install verdict-gate`
+      → run → job-summary table + `exit-code` / `information` / `grounded`
+      outputs. **9/23** (Marketplace listing still needs a tag, see RELEASE.md)
+- [x] dist renamed `reverify` → `verdict-gate` (v0.12.0). `reverify` /
+      `reverify-mcp` console scripts kept for upstream compatibility.
+      `publish-pypi.yml` added (OIDC trusted publishing, no token in repo).
+      **9/23** — actual upload needs the PyPI publisher configured once.
+- [x] `.verdict/claims.json` + `allowlist.json` committed; this repo now gates
+      itself (`verdict.yml` workflow: clean sample must pass, sloppy sample must
+      exit 2, own docs gated, both test suites green). **9/23**
 - [ ] MCP server exposing `verify_claims` (mirror `reverify/mcp_server.py`) so
       agents can gate their own output mid-run. Travel week.
 - [ ] `SKILL.md` for the skills.sh ecosystem: same rule set, agent surface.
@@ -148,7 +152,21 @@ Do not build before ~20 outside stars or 3 teams asking.
 
 ## 5. Next actions, in order
 
-1. GitHub Action `verdict-gate@v1` + PyPI rename/publish (9/23)
-2. Commit `.verdict/` defaults in this repo (9/24)
-3. Pages sample report + MCP server (travel week)
-4. Then M4: `citation_resolves`, `number_matches_source`
+1. **Needs you (one-time, ~10 min):** claim `verdict-gate` on PyPI + add the
+   trusted publisher, then `git tag v0.12.0 && git push origin v0.12.0`.
+   Steps in [RELEASE.md](RELEASE.md). Without it the action cannot install.
+2. Publish the release to Marketplace and move the `v1` floating tag.
+3. Travel week (9/25–10/5): MCP server (`verify_claims`), SKILL.md for
+   skills.sh, GitHub Pages sample report.
+4. Then M4: `citation_resolves`, `number_matches_source`, lexicon v2, launch.
+
+## 6. Self-gate (this repo gates itself)
+
+```bash
+verdict check ITERATION-PLAN.md --claims-file .verdict/claims.json --base-dir .
+# 5/5 verified, information 1.65, grounded_score 1.0, exit 0
+```
+
+Claims: the docs exist, no key-shaped strings in tracked docs, and
+`pytest -q verdict/tests` really passes. Also enforced in CI (`.github/workflows/verdict.yml`),
+including a negative test — the sloppy sample must exit 2.
