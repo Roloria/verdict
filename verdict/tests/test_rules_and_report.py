@@ -125,10 +125,13 @@ def test_report_renders_and_escapes(tmp_path):
     assert "已驳回" in html
     assert "闸门结论" in html
     assert "复现命令：" in html
-    assert "gate report" not in html
+    assert 'data-en="verdict · gate report"' in html   # 另一语言内嵌，可前端切换
+    assert 'id="langbtn"' in html
+    assert 'data-en="REFUTED"' in html
     assert ">REFUTED<" not in html
-    assert "<script>" not in html  # escaped
-    assert "&lt;script&gt;" in html
+    assert "&lt;script&gt;" in html                 # user text is escaped
+    assert "a <script> tell" not in html
+    assert html.count("<script>") == 1             # only our inline language switch
     assert "https://" not in html  # no external resources
 
 
@@ -169,4 +172,4 @@ def test_report_translates_gate_details():
     assert "出现次数=1" in page
     assert "未通过" in page
     assert "规则包：ai-tells" in page
-    assert "found 1 occurrence" not in page
+    assert 'data-en="found 1 occurrence(s) that must not be there"' in page

@@ -22,6 +22,7 @@ from reverify.cli import load_input_bytes
 from reverify.verifier import Claim
 
 from . import __version__
+from .i18n import LANGS, mark_label, set_lang, t, translate_detail
 from .report import load_json, render_file
 from .rules import add_bundle, available, load as load_bundle, load_many
 from .verifier import DEFAULT_ALLOWLIST, GateVerifier, TEXT_KINDS
@@ -46,9 +47,8 @@ def _load_claims(args: argparse.Namespace) -> List[Dict[str, Any]]:
 
 def _print(results: List[Dict[str, Any]]) -> None:
     for r in results:
-        mark = {"VERIFIED": "PASS", "REFUTED": "FAIL", "INCONCLUSIVE": "????",
-                "OBSERVED": "note", "INVALIDATED": "skip"}.get(r["verdict"], r["verdict"])
-        line = f"  [{mark}] {r['kind']:<14} w={r['weight']:<5} {r['detail']}"
+        mark = mark_label(r["verdict"])
+        line = f"  [{mark}] {r['kind']:<14} w={r['weight']:<5} {translate_detail(r['detail'])}"
         if r.get("note"):
             line += f"  ({r['note']})"
         print(line)
@@ -98,30 +98,29 @@ def cmd_check(args: argparse.Namespace) -> None:
     if args.json:
         print(json.dumps(report, indent=2, ensure_ascii=False))
     else:
-        print("=== verdict: AI output gate ===")
+        print(t("cli.header"))
         shown = report["results"] if args.verbose else [
             r for r in report["results"] if r["verdict"] not in ("VERIFIED", "OBSERVED")
         ]
         _print(shown)
         hidden = len(report["results"]) - len(shown)
         if hidden:
-            print(f"  (+{hidden} passing claim(s) hidden, --verbose lists them)")
-        print(
-            f"\nverified {report['verified']}/{report['total_claims']} "
-            f"(refuted {report['refuted']}, inconclusive {report['inconclusive']}, "
-            f"invalidated {report['invalidated']})\n"
-            f"information {report['information']} / min {report['min_information']}   "
-            f"grounded_score {report['grounded_score']}\n"
-            f"trustworthy {report['trustworthy']}  informative {report['informative']}  "
-            f"GROUNDED {report['grounded']}"
-        )
+            print("  " + t("cli.hidden", n=hidden))
+        print("\n" + t("cli.summary", verified=report["verified"], total=report["total_claims"],
+                       refuted=report["refuted"], inconclusive=report["inconclusive"],
+                       invalidated=report["invalidated"]))
+        print(t("cli.info", information=report["information"],
+                minimum=report["min_information"], score=report["grounded_score"]))
+        print(t("cli.flags", trustworthy=report["trustworthy"],
+                informative=report["informative"],
+                gate=t("gate.pass" if report["grounded"] else "gate.fail")))
         if report["gate_kinds"]:
-            print(f"gate kinds: {', '.join(report['gate_kinds'])}")
+            print(t("cli.gate_kinds", kinds=", ".join(report["gate_kinds"])))
 
     if getattr(args, "report", ""):
         render_file(report, args.report, target=args.target, rules=getattr(args, "rules", "") or "")
         if not args.json:
-            print(f"report: {args.report}")
+            print(t("cli.report", path=args.report))
 
     fail_on = {s.strip() for s in str(args.fail_on).split(",") if s.strip()}
     if args.strict:
@@ -160,10 +159,10 @@ def cmd_check(args: argparse.Namespace) -> None:
 
 
 def cmd_kinds(args: argparse.Namespace) -> None:
-    print("verdict gate kinds:")
+    print(t("kinds.title"))
     for k in TEXT_KINDS:
         print(f"  {k}")
-    print("\nplus every reverify kind (bytes_at, string_present, functions_equiv, ...)")
+    print(t("kinds.upstream"))
 
 
 def cmd_scope(args: argparse.Namespace) -> None:
@@ -181,31 +180,31 @@ def cmd_scope(args: argparse.Namespace) -> None:
     if args.json:
         print(json.dumps(out, indent=2, ensure_ascii=False))
     else:
-        print(f"mode={scope['mode']} changed={scope['changed']} "
-              f"selected={scope['selected_count']} excluded={scope['excluded_count']} "
-              f"bundles={len(scope['bundles'])}")
+        print(t("scope.summary", mode=scope["mode"], changed=scope["changed"],
+                selected=scope["selected_count"], excluded=scope["excluded_count"],
+                bundles=len(scope["bundles"])))
         for b in out.get("bundles", []):
             label = b["label"]
             files = ", ".join(b["files"][:4]) + (" ..." if len(b["files"]) > 4 else "")
             print(f"  [{label}] {files}")
         for d in scope["decisions"]:
             if not d["selected"]:
-                print(f"  excluded {d['path']}: {d['reason']}")
-        print("(--json for the full structured scope / --delegate for an agent hand-off)")
+                print(t("scope.excluded", path=d["path"], reason=d["reason"]))
+        print(t("scope.hint"))
 
 
 def cmd_rules(args: argparse.Namespace) -> None:
     if args.rules_cmd == "list":
         rows = available(args.base_dir)
         if not rows:
-            print("no bundles found")
+            print(t("rules.none"))
             return
         for name, origin, desc in rows:
             print(f"  {name:<16} {origin:<8} {desc}")
     elif args.rules_cmd == "show":
         print(json.dumps(load_bundle(args.name, args.base_dir), indent=2, ensure_ascii=False))
     elif args.rules_cmd == "add":
-        print(f"vendored -> {add_bundle(args.src, args.base_dir)}")
+        print(t("rules.vendored", path=add_bundle(args.src, args.base_dir)))
 
 
 def cmd_report(args: argparse.Namespace) -> None:
@@ -215,9 +214,15 @@ def cmd_report(args: argparse.Namespace) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser(prog="verdict", description="Deterministic gates for AI output.")
     ap.add_argument("--version", action="version", version=f"verdict {__version__}")
+    common = argparse.ArgumentParser(add_help=False)
+    common.add_argument("--lang", dest="lang", choices=[*LANGS, "auto"],
+                        default=argparse.SUPPRESS,
+                        help="界面语言 / UI language: zh-CN | en | auto")
+    ap.add_argument("--lang", dest="lang", choices=[*LANGS, "auto"], default=None,
+                    help="界面语言 / UI language: zh-CN | en | auto")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
-    c = sub.add_parser("check", help="verify a claim set against a target")
+    c = sub.add_parser("check", parents=[common], help="verify a claim set against a target")
     c.add_argument("target")
     c.add_argument("--claims-file")
     c.add_argument("--claim", action="append")
@@ -235,10 +240,10 @@ def main() -> None:
     c.add_argument("--verbose", action="store_true", help="list passing claims too")
     c.set_defaults(func=cmd_check)
 
-    k = sub.add_parser("kinds", help="list claim kinds")
+    k = sub.add_parser("kinds", parents=[common], help="list claim kinds")
     k.set_defaults(func=cmd_kinds)
 
-    sc = sub.add_parser("scope", help="deterministic review scope: file selection, rules, bundles")
+    sc = sub.add_parser("scope", parents=[common], help="deterministic review scope: file selection, rules, bundles")
     sc.add_argument("--mode", choices=["workspace", "merge-base", "commit", "base"], default="workspace")
     sc.add_argument("--base", default="HEAD")
     sc.add_argument("--to", default="HEAD")
@@ -249,27 +254,28 @@ def main() -> None:
     sc.add_argument("--json", action="store_true")
     sc.set_defaults(func=cmd_scope)
 
-    r = sub.add_parser("rules", help="rule bundles")
+    r = sub.add_parser("rules", parents=[common], help="rule bundles")
     rs = r.add_subparsers(dest="rules_cmd", required=True)
-    rl = rs.add_parser("list", help="list available bundles")
+    rl = rs.add_parser("list", parents=[common], help="list available bundles")
     rl.add_argument("--base-dir", default=".")
     rl.set_defaults(func=cmd_rules)
-    rsh = rs.add_parser("show", help="print a bundle")
+    rsh = rs.add_parser("show", parents=[common], help="print a bundle")
     rsh.add_argument("name")
     rsh.add_argument("--base-dir", default=".")
     rsh.set_defaults(func=cmd_rules)
-    ra = rs.add_parser("add", help="vendor a bundle file into .verdict/rules/")
+    ra = rs.add_parser("add", parents=[common], help="vendor a bundle file into .verdict/rules/")
     ra.add_argument("src")
     ra.add_argument("--base-dir", default=".")
     ra.set_defaults(func=cmd_rules)
 
-    rp = sub.add_parser("report", help="render an HTML report from a saved JSON run")
+    rp = sub.add_parser("report", parents=[common], help="render an HTML report from a saved JSON run")
     rp.add_argument("report_json")
     rp.add_argument("--out", default="gate.html")
     rp.add_argument("--target", default="")
     rp.set_defaults(func=cmd_report)
 
     args = ap.parse_args()
+    set_lang(getattr(args, "lang", None), getattr(args, "base_dir", "."))
     args.func(args)
 
 

@@ -183,6 +183,27 @@ matters", not as a small number.
   run. Only the presentation layer is translated: verdict values and `--json`
   output stay English for CI and scripts.
 
+## 语言切换 / Language
+
+`zh-CN` 和 `en` 都支持。新增一种语言只需在 `verdict/i18n.py` 加一份消息表、
+一组 detail 翻译规则和一份证据字段名映射，调用方无需改动。
+
+```bash
+verdict check report.md --rules ai-tells-density --lang zh-CN
+verdict --lang en check report.md --rules ai-tells-density
+VERDICT_LANG=en verdict rules list
+verdict check ... --lang auto          # 跟随 LC_ALL / LANG
+```
+
+优先级：`--lang` > `VERDICT_LANG` > `.verdict/config.json`（示例
+`.verdict/config.example.json`）> 默认 `zh-CN`。
+
+HTML 报告是**单文件双语**：两种语言都内嵌在页面里，右上角按钮即时切换，
+离线打开也能切。`--lang` 决定打开时显示哪种。
+
+保持英文的部分：协议值 `VERIFIED/REFUTED/...`、gate 名、`--json` 输出、
+证据字段名（JSON）、claim 文件。CI 与脚本不受语言影响。
+
 ## Agent surfaces
 
 `SKILL.md` at the repo root is an Agent Skills bundle: an agent can install it

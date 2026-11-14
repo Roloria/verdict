@@ -39,6 +39,10 @@ inputs:
     description: Also write a single-file HTML report to this path
     required: false
     default: ""
+  lang:
+    description: UI language for the console and HTML report (zh-CN | en | auto)
+    required: false
+    default: "zh-CN"
 
 outputs:
   exit-code:
@@ -77,12 +81,14 @@ runs:
         V_MIN: ${{ inputs.min-information }}
         V_FAIL: ${{ inputs.fail-on }}
         V_REPORT: ${{ inputs.report }}
+        V_LANG: ${{ inputs.lang }}
       run: |
         set +e
         args=(check "$V_TARGET" --base-dir "$V_BASE" --min-information "$V_MIN" --fail-on "$V_FAIL")
         [ -n "$V_RULES" ] && args+=(--rules "$V_RULES")
         [ -n "$V_CLAIMS" ] && args+=(--claims-file "$V_CLAIMS")
         [ -n "$V_REPORT" ] && args+=(--report "$V_REPORT")
+        args+=(--lang "$V_LANG")
         verdict "${args[@]}" --json > verdict-run.json
         code=$?
         V_EXIT=$code python - <<'PY'

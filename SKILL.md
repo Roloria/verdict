@@ -117,6 +117,12 @@ Flat form is fine:
 - `--min-information` is bundle-size sensitive. Shipped bundles land near 2.5.
 - `reverify/` is vendored upstream and must never be edited.
 
+## Language
+
+`zh-CN` and `en` are both supported. Choose with `--lang`, `VERDICT_LANG`,
+`.verdict/config.json`, or `--lang auto`. The HTML report embeds both languages
+and switches in the browser. Protocol values and `--json` stay English.
+
 ## Team rules
 
 ```bash

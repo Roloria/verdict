@@ -7,6 +7,8 @@
   {"kind": "file_exists", "path": "eval/RESULTS.md", "min_bytes": 200, "note": "the benchmark has published numbers"},
   {"kind": "file_exists", "path": "verdict/data/slop_patterns.json", "min_bytes": 1000, "note": "the slop preset ships"},
   {"kind": "file_exists", "path": "verdict/scope.py", "min_bytes": 2000, "note": "the deterministic scope layer ships"},
+  {"kind": "file_exists", "path": "verdict/i18n.py", "min_bytes": 2000, "note": "the language layer ships"},
+  {"kind": "file_exists", "path": "README.en.md", "min_bytes": 1000, "note": "the English README ships"},
   {"kind": "command_succeeds", "argv": ["pytest", "-q", "verdict/tests"], "timeout": 300, "note": "the gate suite passes"},
   {"kind": "command_succeeds", "argv": ["python", "eval/run.py"], "timeout": 120, "note": "the benchmark stays green"}
 ]

@@ -247,3 +247,27 @@ Files added/changed: `verdict/scope.py`, `verdict/verifier.py` (citation_resolve
 modules, USAGE / SKILL (both copies) / ATTRIBUTION / eval results.
 
 Tests: **67 verdict tests pass**; benchmark still 1.000 / 1.000 / 1.000.
+
+---
+
+## 9. Bilingual support + README rewrite, 2026-11-15
+
+- **i18n architecture** (`verdict/i18n.py`): language table, detail-translation
+  rules, evidence-key map. Add a language = add one table; no caller changes.
+  Resolution: `--lang` > `VERDICT_LANG` > `.verdict/config.json` > `--lang auto`
+  (locale) > default `zh-CN`.
+- **HTML report**: embeds BOTH languages in one offline file and switches with a
+  top-right button (small inline script, no CDN). Server-side `--lang` decides
+  which is visible on load. `gate.html` (zh) and `gate.en.html` (en) samples.
+- **CLI**: every human-facing string localised (header, marks, summary, scope,
+  rules, kinds); `--lang` works before or after the subcommand. `--json`,
+  protocol values, gate names and claim files stay English.
+- **MCP**: `verify_claims` accepts `lang`, returns `verdict_label` +
+  `detail_display` alongside the raw values.
+- **Action**: new `lang` input.
+- **README**: rewritten in Chinese with an English twin (`README.en.md`),
+  language switch links, current capability/status tables. Upstream README
+  archived as `README.upstream.md` (420 lines, unmodified).
+- `.verdict/config.example.json`, USAGE and both SKILL.md copies updated.
+- Tests: 76 verdict tests (new `test_i18n.py`), bilingual report + CLI + MCP
+  switching covered.

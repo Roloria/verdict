@@ -41,6 +41,20 @@ def test_list_rules_tool():
     assert "slop_density" in payload["gate_kinds"]
 
 
+def test_mcp_lang_switch():
+    dirty = "Let's delve into this pivotal moment. It's worth noting the ever-evolving landscape, a testament to the tapestry of engineering."
+    zh = json.loads(call_tool("verify_claims", {
+        "text": dirty, "rules": "ai-tells-density", "lang": "zh-CN", "min_information": 0.0,
+    })["content"][0]["text"])
+    en = json.loads(call_tool("verify_claims", {
+        "text": dirty, "rules": "ai-tells-density", "lang": "en", "min_information": 0.0,
+    })["content"][0]["text"])
+    assert zh["lang"] == "zh-CN" and en["lang"] == "en"
+    assert all("verdict_label" in r and "detail_display" in r for r in zh["results"])
+    assert zh["results"][0]["verdict"] == en["results"][0]["verdict"]  # protocol unchanged
+    assert zh["results"][0]["detail_display"] != en["results"][0]["detail_display"]
+
+
 def test_stdio_end_to_end():
     messages = [
         {"jsonrpc": "2.0", "id": 1, "method": "initialize"},

@@ -20,6 +20,7 @@ from typing import Any, Dict, List
 from reverify.verifier import Claim
 
 from . import __version__
+from .i18n import set_lang, translate_detail, verdict_label
 from .rules import available, load_many
 from .verifier import GateVerifier, TEXT_KINDS
 
@@ -39,6 +40,7 @@ TOOLS: List[Dict[str, Any]] = [
                 "rules": {"type": "string", "description": "comma-separated bundle names"},
                 "base_dir": {"type": "string", "description": "repo root for path/diff gates"},
                 "min_information": {"type": "number", "description": "evidence threshold", "default": 1.0},
+                "lang": {"type": "string", "description": "display language: zh-CN | en | auto"},
             },
             "required": ["text"],
         },
@@ -51,8 +53,9 @@ TOOLS: List[Dict[str, Any]] = [
 ]
 
 
-def _summarize(report: Dict[str, Any]) -> Dict[str, Any]:
+def _summarize(report: Dict[str, Any], lang: str = "zh-CN") -> Dict[str, Any]:
     return {
+        "lang": lang,
         "total_claims": report["total_claims"],
         "verified": report["verified"],
         "refuted": report["refuted"],
@@ -65,9 +68,11 @@ def _summarize(report: Dict[str, Any]) -> Dict[str, Any]:
         "results": [
             {
                 "kind": r["kind"],
-                "verdict": r["verdict"],
+                "verdict": r["verdict"],              # protocol value, never translated
+                "verdict_label": verdict_label(r["verdict"], lang),
                 "weight": r.get("weight", 0),
-                "detail": r.get("detail", ""),
+                "detail": r.get("detail", ""),        # raw, for scripts
+                "detail_display": translate_detail(r.get("detail", ""), lang),
                 "note": r.get("note", ""),
             }
             for r in report["results"]
@@ -97,15 +102,17 @@ def call_tool(name: str, args: Dict[str, Any]) -> Dict[str, Any]:
     if not claims_data:
         return {"content": [{"type": "text", "text": "no claims: pass 'claims' or 'rules'"}], "isError": True}
 
+    base_dir = str(args.get("base_dir", "."))
+    lang = set_lang(args.get("lang"), base_dir)
     report = GateVerifier(
         text.encode("utf-8"),
-        base_dir=str(args.get("base_dir", ".")),
+        base_dir=base_dir,
         weight_overrides=weights,
     ).verify_all(
         [Claim.from_dict(c) for c in claims_data],
         min_information=float(args.get("min_information", 1.0)),
     )
-    return {"content": [{"type": "text", "text": json.dumps(_summarize(report), ensure_ascii=False, indent=2)}]}
+    return {"content": [{"type": "text", "text": json.dumps(_summarize(report, lang), ensure_ascii=False, indent=2)}]}
 
 
 def handle(req: Dict[str, Any]) -> Dict[str, Any]:
