@@ -137,9 +137,9 @@ ID regex firing on badge URLs.
 
 | Item | State |
 |---|---|
-| Code | complete; 381+ passed / 55 skipped, self-gate 10/10 |
+| Code | complete; 414 passed / 55 skipped, self-gate 19/19 |
 | PyPI / Marketplace | **not published** — package name is `ai-verdict` (the original `verdict-gate` was taken) |
-| Preflight | `verdict release-check`: 6✓/2✗; the GitHub `pypi` environment and build deps are ready |
+| Preflight | `verdict release-check`: 7✓/1✗ (only the tag is missing); the GitHub `pypi` environment and build deps are ready |
 | Next | add a pending publisher on pypi.org → `sh tools/publish.sh` → Marketplace, see [RELEASE.md](RELEASE.md) |
 
 ## Docs

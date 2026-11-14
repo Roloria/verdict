@@ -19,10 +19,10 @@
 | M4 内容垂直 + 首发 | 进行中 |
 | M5 团队版 | 等 M4 出现拉动力再做 |
 
-测试：**407 passed / 55 skipped**（314 上游 + 93 verdict）。
+测试：**414 passed / 55 skipped**（314 上游 + 93 verdict）。
 
 **唯一阻塞**：还没发布。`verdict-gate` 这个名字 11/10 在 PyPI 被占用，包名改为
-`ai-verdict`。GitHub `pypi` 环境已建好，`verdict release-check` 当前 6✓/2✗；
+`ai-verdict`。GitHub `pypi` 环境已建好，`verdict release-check` 当前 7✓/1✗；
 只差在 pypi.org 配一次 pending trusted publisher，然后 `sh tools/publish.sh`。
 详见 RELEASE.md。
 
@@ -170,7 +170,7 @@ Fork、上游测试套件跑绿、`verdict/` 包、`text_present` / `text_absent
 
 ```bash
 verdict check ITERATION-PLAN.md --claims-file .verdict/claims.json --base-dir .
-# 18/18 已验证，information 2.394，grounded_score 1.0，exit 0
+# 19/19 已验证，information 2.413，grounded_score 1.0，exit 0
 ```
 
 断言：文档、SKILL.md、基准结果、密度预设、提案器、发布前检查与发布脚本都存在；
@@ -320,7 +320,7 @@ USAGE / SKILL（两份）/ ATTRIBUTION / 评测结果。
 **P0 #1 发布 —— 能自动化的都做完了**：
 - 通过 API 建好 GitHub `pypi` 环境（无需 secret，OIDC）。
 - `verdict release-check`：检查包名、版本同步、workflow、action、本地 tag、
-  构建后端、PyPI 状态与环境。当前 6✓ / 2✗。
+  构建后端、PyPI 状态与环境。自检后 7✓/1✗（仅缺 tag）。
 - `tools/publish.sh`：一键 tag+push；拒绝脏工作区、幂等、不 force push。
 - 装好 `build`，本地 wheel 路径可校验。
 - RELEASE.md 重写为：`verdict release-check` → pypi.org 点一次 →
@@ -343,3 +343,22 @@ trusted publisher*（Roloria / verdict / publish-pypi.yml / pypi）。**没有�
 中文成为主版（本文件），英文原版归档为
 [ITERATION-PLAN.en.md](ITERATION-PLAN.en.md)，与 README 的双版约定一致；
 两版顶部互链。`README.en.md` 的文档链接改指英文版。自闸 target 仍是本文件。
+
+---
+
+## 13. 自检迭代，2026-11-15 05:00
+
+跑了一轮全量自检：测试套件、自闸（中英两种语言）、7 个子命令 smoke、Markdown
+链接、11 个 YAML、`python -m build --wheel` 与 wheel 内容清单。发现并修掉 4 个
+真实缺陷：
+
+| 缺陷 | 修法 |
+|---|---|
+| `verdict report` 传入 claims 数组时抛 AttributeError | 校验运行报告 JSON 结构，给双语友好错误 |
+| `verdict init` 生成的 workflow 上传不存在的 SARIF 文件 | check 步骤加 `--sarif verdict.sarif` |
+| `release.py` 硬编码 Roloria/verdict、把「PyPI 名字空闲」误报为 ✗、只检查 `build` 模块 | 从 git remote 推导 slug；空闲名字/离线作为信息项；构建检查补 setuptools + wheel |
+| SARIF finding 行号恒为 1 | 从 evidence 的命中偏移（或引用失败的行号）换算真实行号 |
+
+另：本地 venv 补装 setuptools/wheel，wheel 构建成功（87 个文件，新增模块与数据
+全部入包）；`verdict release-check` 从 6✓/2✗ 变为 7✓/1✗。新增 8 个回归测试
+（`test_selfcheck_fixes.py`）。

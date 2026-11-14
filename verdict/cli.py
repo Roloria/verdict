@@ -128,7 +128,8 @@ def cmd_check(args: argparse.Namespace) -> None:
             print(t("cli.report", path=args.report))
 
     if getattr(args, "sarif", ""):
-        write_sarif(report, args.sarif, target=args.target)
+        write_sarif(report, args.sarif, target=args.target,
+                    text=data.decode("utf-8", "replace"))
         if not args.json:
             print(t("cli.sarif", path=args.sarif))
 
@@ -250,7 +251,10 @@ def cmd_rules(args: argparse.Namespace) -> None:
 
 
 def cmd_report(args: argparse.Namespace) -> None:
-    print(render_file(load_json(args.report_json), args.out, target=args.target or ""))
+    doc = load_json(args.report_json)
+    if not isinstance(doc, dict) or not isinstance(doc.get("results"), list):
+        raise SystemExit(t("cli.bad_report"))
+    print(render_file(doc, args.out, target=args.target or ""))
 
 
 def main() -> None:

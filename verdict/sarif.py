@@ -27,7 +27,19 @@ def _evidence_summary(evidence: Any) -> str:
     return " ".join(parts)
 
 
-def build_sarif(report: Dict[str, Any], target: str = "") -> Dict[str, Any]:
+def _line_for(result: Dict[str, Any], text: str) -> int:
+    """Locate a finding from observed evidence, not a hard-coded line 1."""
+    ev = result.get("evidence") or {}
+    for failure in ev.get("failures") or []:
+        if isinstance(failure, dict) and isinstance(failure.get("line"), int):
+            return max(1, failure["line"])
+    at = ev.get("at") or []
+    if isinstance(at, list) and at and isinstance(at[0], int) and text:
+        return text[: at[0]].count("\n") + 1
+    return 1
+
+
+def build_sarif(report: Dict[str, Any], target: str = "", text: str = "") -> Dict[str, Any]:
     rules: List[Dict[str, Any]] = []
     index: Dict[str, int] = {}
     findings: List[Dict[str, Any]] = []
@@ -58,7 +70,7 @@ def build_sarif(report: Dict[str, Any], target: str = "") -> Dict[str, Any]:
             "locations": [{
                 "physicalLocation": {
                     "artifactLocation": {"uri": target or "artifact"},
-                    "region": {"startLine": 1},
+                    "region": {"startLine": _line_for(r, text)},
                 }
             }],
             "partialFingerprints": {"verdictClaim": fingerprint},
@@ -85,8 +97,8 @@ def build_sarif(report: Dict[str, Any], target: str = "") -> Dict[str, Any]:
     }
 
 
-def write_sarif(report: Dict[str, Any], path: str, target: str = "") -> str:
+def write_sarif(report: Dict[str, Any], path: str, target: str = "", text: str = "") -> str:
     with open(path, "w", encoding="utf-8") as f:
-        json.dump(build_sarif(report, target), f, indent=2, ensure_ascii=False)
+        json.dump(build_sarif(report, target, text), f, indent=2, ensure_ascii=False)
         f.write("\n")
     return path

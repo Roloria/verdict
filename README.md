@@ -127,9 +127,9 @@ precision / recall / F1 = 1.000 / 1.000 / 1.000，0 漏放、0 误报，按缺�
 
 | 项 | 状态 |
 |---|---|
-| 代码 | 完整，全量测试 381+ passed / 55 skipped，自闸 10/10 |
+| 代码 | 完整，全量测试 414 passed / 55 skipped，自闸 19/19 |
 | PyPI / Marketplace | **未发布** —— 包名 `ai-verdict`（原 `verdict-gate` 已被同名项目占用） |
-| 发布前检查 | `verdict release-check`：6✓/2✗，GitHub `pypi` 环境已建、构建依赖已就绪 |
+| 发布前检查 | `verdict release-check`：7✓/1✗（只差 tag），GitHub `pypi` 环境已建、构建依赖已就绪 |
 | 待办 | pypi.org 配 pending trusted publisher → `sh tools/publish.sh` → Marketplace，见 [RELEASE.md](RELEASE.md) |
 
 ## 文档

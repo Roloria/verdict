@@ -108,6 +108,10 @@ MESSAGES: Dict[str, Dict[str, str]] = {
         "en": "no externally-verifiable claims found (numbers/URLs skipped); use rule bundles or add claims manually",
     },
     "propose.hint_rules": {"zh-CN": "下一步：{cmd}", "en": "next: {cmd}"},
+    "cli.bad_report": {
+        "zh-CN": "不是有效的 verdict 运行报告：需要含 results 字段的 JSON 对象（规则包/claims 数组请用 --claims-file）",
+        "en": "not a verdict run report: expected a JSON object with a results field (use --claims-file for a claims array)",
+    },
     "cli.no_claims": {
         "zh-CN": "没有可验证的断言：用 --rules、--claims-file 或 --claim 提供（空草稿不算）",
         "en": "no claims to verify: pass --rules, --claims-file or --claim (an empty draft is not a claim set)",

@@ -33,7 +33,7 @@ jobs:
           python-version: "3.12"
       - run: python -m pip install ai-verdict
       - name: gate docs and reports
-        run: verdict check README.md --claims-file .verdict/claims.json --base-dir . --no-ledger
+        run: verdict check README.md --claims-file .verdict/claims.json --base-dir . --no-ledger --sarif verdict.sarif
       - name: upload SARIF
         if: always()
         uses: github/codeql-action/upload-sarif@v3
