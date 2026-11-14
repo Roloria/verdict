@@ -99,11 +99,49 @@ Exit codes:
 | `text_absent` | output does **not** contain it | same |
 | `file_exists` | a repo-relative path exists | `path`, `min_bytes` |
 | `command_succeeds` | an allow-listed command exits as expected | `argv` (list, no shell), `cwd`, `timeout`, `expect_exit`, `expect_stdout` |
-| `diff_touches` | the git diff touches the claimed paths | `paths`, `base`, `mode` (`all`/`any`) |
+| `diff_touches` | the git diff touches the claimed paths | `paths`, `base`, `mode` (`all`/`any`), `revision` (`base`/`workspace`/`merge-base`/`commit`) |
+| `citation_resolves` | every `path:line` reference really resolves | `from_text`, `citations`, `contains`, `max_citations` |
 | `slop_density` | no paragraph hits N **distinct** AI-tell patterns | `preset: slop-120`, `min_hits`, or custom `patterns` |
 | `tests_actually_prove` | tests were not deleted / skipped / left untouched | `base`, `require_test_change`, `test_globs` |
 
 Plus every reverify kind (`bytes_at`, `string_present`, `functions_equiv`, ...).
+
+## Review scope (deterministic pre-dispatch)
+
+Adapted from open-code-review's engineering layer. One pure selection pass is
+shared by preview and real runs, so they cannot disagree.
+
+```bash
+verdict scope --mode workspace --json
+verdict scope --mode merge-base --base main --to HEAD --json
+verdict scope --mode commit --commit abc123 --delegate --json
+```
+
+Modes: `workspace` (staged + unstaged + untracked), `merge-base`, `commit`,
+`base` (plain `git diff <ref>`).
+
+Output contains:
+
+| field | meaning |
+|---|---|
+| `decisions` | every changed file with an explicit reason: `secret-path` / `binary` / `user-exclude` / `default-exclude` / `deleted` / `too-large` / `ok` |
+| `selected` | files worth attention after static gates |
+| `rule_groups` | files grouped by `(source, pattern, rules)` — provenance is exact for every member |
+| `bundles` | implementation paired with its tests, i18n siblings paired, rest grouped by directory, ≤10 files |
+| `--delegate` | a structured spec for a host agent; verdict calls no model |
+
+Per-file rule resolution (optional `.verdict/scope-rules.json`):
+
+```json
+{"rules": [{"pattern": "src/**/*.py", "rules": ["house-style", "secrets-pii"]}]}
+```
+
+Unmatched files fall back to rules by extension. `--exclude GLOB` adds a
+user-level gate. Secret paths are excluded first and cannot be readmitted.
+
+`citation_resolves` is the location/reflection check: it extracts `path:line`
+references from a report, verifies the file and line, and returns the observed
+line as evidence. Bad line numbers or missing files are REFUTED.
 
 ## Safety: `command_succeeds`
 

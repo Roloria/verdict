@@ -32,4 +32,27 @@ used for density scoring (one phrase is normal, several distinct patterns in a
 paragraph is not). The catalogue itself is kept verbatim for reference; no
 catalogue text is presented as verdict's own research.
 
+## Design borrowed from alibaba/open-code-review
+
+`verdict/scope.py` and `citation_resolves` adapt **design ideas** from
+**alibaba/open-code-review** (Apache-2.0, https://github.com/alibaba/open-code-review):
+
+- one pure pre-dispatch selection pass whose per-file decision is shared by
+  preview and the real run (their #782 drift bug);
+- static gates in a fixed order — secret path → binary → user exclude →
+  generated/test/lock patterns → deletion → size — each with an explicit reason;
+- per-file rule resolution grouped by (source, pattern, rules) so a group's
+  provenance is accurate for every member (`delegate/rulegroup.go`);
+- deterministic bundling of related files and a structured delegate spec that
+  hands a host agent the scope without calling a model;
+- independent location/reflection checking of references (`citation_resolves`).
+
+**No Apache-2.0 code or data is copied.** The exclusion list, glob engine,
+bundling and rule groups are independent MIT implementations; OCR's
+`default_exclude_patterns.json`, `rule.json` and Go sources are neither vendored
+nor reproduced. They remain Apache-2.0 and are not part of this distribution.
+
+verdict deliberately does **not** adopt their LLM reviewer, provider config,
+prompt templates or session resume — the verify path here stays model-free.
+
 License: MIT (see LICENSE).

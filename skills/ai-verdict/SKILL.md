@@ -68,7 +68,34 @@ verdict check report.md --claims-file claims.json --report gate.html
 | `command_succeeds` | an allow-listed command exits as expected |
 | `diff_touches` | the git diff actually touches the claimed paths |
 | `tests_actually_prove` | tests were not deleted, skipped or left untouched |
+| `citation_resolves` | every `path:line` in the output really resolves | `from_text`, `citations`, `contains`, `max_citations` |
 | `text_present` / reverify kinds | every upstream kind still works |
+
+## Scope and delegate
+
+Before reviewing a change set, ask verdict for its deterministic scope. Do not
+pick files by intuition:
+
+```bash
+verdict scope --mode workspace --json
+verdict scope --mode merge-base --base main --to HEAD --delegate --json
+verdict scope --mode commit --commit abc123 --json
+```
+
+The scope gives you: every changed file with an explicit include/exclude reason,
+per-file resolved rule bundles, deterministic bundles that pair implementation
+with its tests, and (with `--delegate`) a structured hand-off spec you can work
+through without verdict calling any model. Preview and the real run consume the
+same selection pass, so they cannot disagree.
+
+Rule resolution is configurable in `.verdict/scope-rules.json`:
+
+```json
+{"rules": [{"pattern": "src/**/*.py", "rules": ["house-style"]}]}
+```
+
+Use `citation_resolves` on any report that points at code: it checks the file
+exists, the line is in range, and returns the observed line as evidence.
 
 Flat form is fine:
 

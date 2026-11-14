@@ -216,3 +216,34 @@ Cloudflare moving into verification and quality gates.
 3. `citation_resolves` / `number_matches_source` — the docs vertical.
 4. Launch post with the demo + benchmark numbers.
 5. Team tier — only after pull.
+
+---
+
+## 8. open-code-review fusion, 2026-11-14
+
+Researched the repo (1405 files, Apache-2.0) and its `internal/agent/selection.go`,
+`grouping.go`, `internal/delegate/rulegroup.go`, `.opencodereview/rule.json` and
+`ASSURANCE_CASE.md`.
+
+**Borrowed (design only, no Apache code or data copied)**:
+
+| OCR capability | verdict implementation |
+|---|---|
+| Pure pre-dispatch selection shared by preview and run (their #782 drift bug) | `scope.build_scope()` — one pass, deterministic decisions |
+| Static gates in fixed order + explicit `ExcludeReason` | `scope.decide()` — secret → binary → user → default → deleted → too-large |
+| Per-file rule resolution grouped by (source, pattern, text) | `scope.resolve_rules()` — same triple key, project config in `.verdict/scope-rules.json` |
+| Smart bundling / i18n + test pairing, ≤10 files per group | `scope.bundle_changes()` — fully deterministic, no LLM grouping |
+| Delegate mode (structured hand-off, no model needed) | `verdict scope --delegate` → `verdict-delegate-spec`; MCP server already covers the agent side |
+| External positioning / reflection modules | `citation_resolves` gate — verifies file + line, returns observed line as evidence |
+| Multi-mode review (workspace / branch range / commit / scan) | `scope.collect_changes()` four modes; `diff_touches` gained `revision` |
+| Public benchmark with precision/recall framing | `eval/RESULTS.md` now breaks metrics down by defect type |
+
+**Deliberately not adopted**: LLM reviewer, provider/model config, prompt
+templates, token budgets, session resume, IDE plugins. verdict's verify path
+stays model-free — that is the product's core constraint.
+
+Files added/changed: `verdict/scope.py`, `verdict/verifier.py` (citation_resolves
++ diff_touches revisions), `verdict/cli.py` (`verdict scope`), three new test
+modules, USAGE / SKILL (both copies) / ATTRIBUTION / eval results.
+
+Tests: **67 verdict tests pass**; benchmark still 1.000 / 1.000 / 1.000.

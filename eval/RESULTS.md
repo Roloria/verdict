@@ -11,6 +11,16 @@ cases **30** · rules `ai-tells-density,secrets-pii` · gate: any REFUTED ⇒ di
 | false alarms (clean flagged) | 0 |
 | TP / TN | 15 / 15 |
 
+## By defect type
+
+| defect | cases | caught | false accepts | false alarms |
+|---|---:|---:|---:|---:|
+| ai-tells-density | 5 | 5 | 0 | 0 |
+| none | 15 | 0 | 0 | 0 |
+| pii | 2 | 2 | 0 | 0 |
+| secret | 6 | 6 | 0 | 0 |
+| zh-tells | 2 | 2 | 0 | 0 |
+
 ## Cases
 
 | id | expected | predicted | defect | refuted | ✓ |

@@ -55,6 +55,7 @@ TEXT_KINDS = (
     "diff_touches",
     "slop_density",
     "tests_actually_prove",
+    "citation_resolves",
 )
 
 # How much a claim says when it verifies. Higher = harder to satisfy by accident.
@@ -68,7 +69,12 @@ _GATE_WEIGHTS = {
     "diff_touches": 0.50,
     "slop_density": 0.65,       # density, not a single word: low false-positive rate
     "tests_actually_prove": 0.70,
+    "citation_resolves": 0.75,  # an independent location check on every reference
 }
+
+CITATION_RE = re.compile(
+    r"(?<![\w@])((?:[\w.-]+/)*[\w.-]+\.[A-Za-z0-9]{1,6}):(\d+)(?!\d)"
+)
 
 DEFAULT_TEST_GLOBS = (
     "test_*.py", "*_test.py", "*.test.ts", "*.spec.ts", "*.test.js", "*.spec.js",
@@ -346,24 +352,17 @@ class GateVerifier(Verifier):
         paths = [str(x) for x in paths]
         base = str(p.get("base", "HEAD"))
         mode = str(p.get("mode", "all"))
-        git = shutil.which("git")
-        evidence: Dict[str, Any] = {"claimed": paths, "base": base, "mode": mode}
-        if git is None:
-            return INCONCLUSIVE, evidence, "git is not available"
+        revision = str(p.get("revision", "base"))
+        evidence: Dict[str, Any] = {"claimed": paths, "base": base, "mode": mode, "revision": revision}
         try:
-            proc = subprocess.run(
-                [git, "-C", self.base_dir, "diff", "--name-only", base],
-                shell=False,
-                timeout=30,
-                capture_output=True,
-            )
-        except (subprocess.TimeoutExpired, OSError) as exc:
-            return INCONCLUSIVE, evidence, f"git diff failed: {exc}"
-        if proc.returncode != 0:
-            evidence["stderr_head"] = proc.stderr.decode("utf-8", "replace")[:200]
-            return INCONCLUSIVE, evidence, "git diff failed (not a repo, or bad base?)"
+            from .scope import collect_changes
 
-        changed = [l.strip() for l in proc.stdout.decode("utf-8", "replace").splitlines() if l.strip()]
+            changed = [c.path for c in collect_changes(
+                self.base_dir, revision, base,
+                str(p.get("to", "HEAD")), str(p.get("commit", "")),
+            )]
+        except (RuntimeError, ValueError) as exc:
+            return INCONCLUSIVE, evidence, f"git diff failed: {exc}"
         matched = [c for c in paths if _path_touched(c, changed)]
         missing = [c for c in paths if c not in matched]
         evidence.update({"changed_count": len(changed), "changed_sample": changed[:20],
@@ -489,6 +488,69 @@ class GateVerifier(Verifier):
         if flags:
             return REFUTED, evidence, "; ".join(flags)
         return VERIFIED, evidence, f"{len(tests_changed)} test file(s) changed, no tampering markers"
+
+    def _check_citation_resolves(self, p: Dict[str, Any]):
+        """Claim: every `path:line` reference in the output really resolves.
+
+        This is verdict's version of open-code-review's external positioning /
+        reflection modules: the location is checked independently of the text
+        that asserted it, and the observed line is returned as evidence.
+        """
+        citations: List[Dict[str, Any]] = []
+        if bool(p.get("from_text", True)):
+            for m in CITATION_RE.finditer(self._text()):
+                citations.append({"path": m.group(1), "line": int(m.group(2))})
+        for c in p.get("citations") or []:
+            if isinstance(c, dict) and "path" in c and "line" in c:
+                citations.append({
+                    "path": str(c["path"]),
+                    "line": int(c["line"]),
+                    "contains": c.get("contains"),
+                })
+        limit = int(p.get("max_citations", 50))
+        truncated = len(citations) > limit
+        citations = citations[:limit]
+        if not citations:
+            return INCONCLUSIVE, {"found": 0}, "no path:line citations found in the output"
+
+        resolved: List[Dict[str, Any]] = []
+        failed: List[Dict[str, Any]] = []
+        for c in citations:
+            full = _resolve_path(self.base_dir, str(c["path"]))
+            if full is None:
+                failed.append({**c, "reason": "escapes the repository root"})
+                continue
+            if not os.path.isfile(full):
+                failed.append({**c, "reason": "file not found"})
+                continue
+            try:
+                with open(full, "r", encoding="utf-8", errors="replace") as f:
+                    lines = f.readlines()
+            except OSError as exc:
+                failed.append({**c, "reason": f"unreadable: {exc}"})
+                continue
+            ln = int(c["line"])
+            if ln < 1 or ln > len(lines):
+                failed.append({**c, "reason": f"line out of range (file has {len(lines)} lines)"})
+                continue
+            actual = lines[ln - 1].rstrip()[:160]
+            wanted = c.get("contains")
+            if wanted and str(wanted) not in actual:
+                failed.append({**c, "reason": "line content mismatch", "actual": actual})
+                continue
+            resolved.append({"path": c["path"], "line": ln, "actual": actual})
+
+        evidence: Dict[str, Any] = {
+            "found": len(citations),
+            "truncated": truncated,
+            "resolved": len(resolved),
+            "failed": len(failed),
+            "resolved_sample": resolved[:8],
+            "failures": failed[:8],
+        }
+        if failed:
+            return REFUTED, evidence, f"{len(failed)} of {len(citations)} cited location(s) do not resolve"
+        return VERIFIED, evidence, f"all {len(resolved)} cited location(s) resolve with observed line content"
 
     # -- scoring ------------------------------------------------------------
 

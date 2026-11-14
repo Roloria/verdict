@@ -74,6 +74,21 @@ def main() -> int:
         f"| false alarms (clean flagged) | {fp} |",
         f"| TP / TN | {tp} / {tn} |",
         "",
+        "## By defect type",
+        "",
+        "| defect | cases | caught | false accepts | false alarms |",
+        "|---|---:|---:|---:|---:|",
+    ]
+    for defect in sorted({r["defect"] for r in rows}):
+        sub = [r for r in rows if r["defect"] == defect]
+        lines.append(
+            f"| {defect} | {len(sub)} | "
+            f"{sum(1 for r in sub if r['expected'] == 'dirty' and r['predicted'] == 'dirty')} | "
+            f"{sum(1 for r in sub if r['expected'] == 'dirty' and r['predicted'] == 'clean')} | "
+            f"{sum(1 for r in sub if r['expected'] == 'clean' and r['predicted'] == 'dirty')} |"
+        )
+    lines += [
+        "",
         "## Cases",
         "",
         "| id | expected | predicted | defect | refuted | ✓ |",

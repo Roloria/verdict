@@ -166,6 +166,34 @@ def cmd_kinds(args: argparse.Namespace) -> None:
     print("\nplus every reverify kind (bytes_at, string_present, functions_equiv, ...)")
 
 
+def cmd_scope(args: argparse.Namespace) -> None:
+    from .scope import build_scope, delegate_spec
+
+    scope = build_scope(
+        base_dir=args.base_dir,
+        mode=args.mode,
+        base=args.base,
+        to=args.to,
+        commit=args.commit,
+        user_excludes=args.exclude or [],
+    )
+    out = delegate_spec(scope) if args.delegate else scope
+    if args.json:
+        print(json.dumps(out, indent=2, ensure_ascii=False))
+    else:
+        print(f"mode={scope['mode']} changed={scope['changed']} "
+              f"selected={scope['selected_count']} excluded={scope['excluded_count']} "
+              f"bundles={len(scope['bundles'])}")
+        for b in out.get("bundles", []):
+            label = b["label"]
+            files = ", ".join(b["files"][:4]) + (" ..." if len(b["files"]) > 4 else "")
+            print(f"  [{label}] {files}")
+        for d in scope["decisions"]:
+            if not d["selected"]:
+                print(f"  excluded {d['path']}: {d['reason']}")
+        print("(--json for the full structured scope / --delegate for an agent hand-off)")
+
+
 def cmd_rules(args: argparse.Namespace) -> None:
     if args.rules_cmd == "list":
         rows = available(args.base_dir)
@@ -209,6 +237,17 @@ def main() -> None:
 
     k = sub.add_parser("kinds", help="list claim kinds")
     k.set_defaults(func=cmd_kinds)
+
+    sc = sub.add_parser("scope", help="deterministic review scope: file selection, rules, bundles")
+    sc.add_argument("--mode", choices=["workspace", "merge-base", "commit", "base"], default="workspace")
+    sc.add_argument("--base", default="HEAD")
+    sc.add_argument("--to", default="HEAD")
+    sc.add_argument("--commit", default="")
+    sc.add_argument("--base-dir", default=".")
+    sc.add_argument("--exclude", action="append", default=[], help="extra glob to exclude")
+    sc.add_argument("--delegate", action="store_true", help="emit a structured hand-off for a host agent")
+    sc.add_argument("--json", action="store_true")
+    sc.set_defaults(func=cmd_scope)
 
     r = sub.add_parser("rules", help="rule bundles")
     rs = r.add_subparsers(dest="rules_cmd", required=True)
