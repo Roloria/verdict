@@ -303,3 +303,47 @@ self-gate 12/12, benchmark unchanged).
 | P1 | PR annotations + diff-only mode (check added lines only) | avoids blocking on historical debt; makes the gate usable on mature repos |
 | P1 | `verdict ledger` query + audit export | turns `.verdict/ledger.jsonl` from a log into the asset a team pays for |
 | P2 | Team tier: private rule sync, report history, SSO | only after pull from P0/P1 |
+
+---
+
+## 11. P0 iteration, 2026-11-15 04:00
+
+**P0 #2 `verdict propose` — done.** The missing half of reverify's "model
+proposes, tools decide" protocol: claim files no longer have to be hand-written.
+Deterministic extraction only (no LLM / network / filesystem read), and only
+assertions that can bind to EXTERNAL evidence become claims:
+
+| in the artifact | generated claim |
+|---|---|
+| `src/app.py:12` | `citation_resolves` with explicit citations |
+| `README.md` | `file_exists` |
+| `` `pytest -q` `` (allow-listed) | `command_succeeds` |
+| "all tests pass" | `tests_actually_prove` |
+| "no secrets" | `text_absent` (credential shape) |
+
+Numbers, percentages and URLs are **deliberately skipped** and reported in
+`skipped`: asserting that a document contains its own number is self-referential.
+`--out` writes a claims.json that `verdict check` consumes directly. Same input
+always yields the same draft.
+
+**P0 #1 publishing — everything automatable is done:**
+- Created the GitHub `pypi` environment via the API (no secret needed, OIDC).
+- `verdict release-check`: preflight over dist name, version sync, workflow,
+  action tag, local tag, build backend, PyPI state and environment. Now 6✓ / 2✗.
+- `tools/publish.sh`: idempotent one-command tag+push; refuses a dirty tree,
+  never force-pushes.
+- Installed `build` so the local wheel path is checkable.
+- RELEASE.md rewritten around: `verdict release-check` → one PyPI web action →
+  `sh tools/publish.sh` → Marketplace.
+
+**Still requires Kevin (cannot be done from this machine):** add a *pending
+trusted publisher* at https://pypi.org/manage/account/publishing/ for
+`ai-verdict` (Roloria / verdict / publish-pypi.yml / pypi). I did **not** push a
+`v0.12.0` tag: without that publisher the release workflow would just fail.
+After he does it, `sh tools/publish.sh` finishes the release.
+
+Tests: **92 verdict tests**, self-gate extended, benchmark and calibration
+unchanged.
+
+**Next after release:** PR annotation + diff-only, `verdict ledger` query/audit
+export, then the team tier.

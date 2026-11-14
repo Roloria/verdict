@@ -12,23 +12,36 @@ stays `Roloria/verdict`, and the CLI command stays `verdict`.
 
 ## 1. PyPI: `pip install ai-verdict`
 
-One-time, on pypi.org:
+Preflight first — it tells you exactly what is left:
 
-1. Create a *pending trusted publisher* for `ai-verdict` (no manual first
-   upload needed), or upload once to claim the name.
-2. Project → Publishing → Add a trusted publisher:
-   - owner `Roloria`, repo `verdict`, workflow `publish-pypi.yml`,
-     environment `pypi`.
-3. Create the GitHub environment `pypi` (Settings → Environments). No secret is
-   needed — the workflow uses OIDC (`id-token: write`).
+```bash
+verdict release-check
+```
 
-Then, per release:
+**One-time, on pypi.org** (the only step a script cannot do for you):
+
+1. Go to https://pypi.org/manage/account/publishing/ → *Add a pending publisher*
+   (no manual upload needed — the first OIDC publish claims the name).
+2. Fill in: PyPI project `ai-verdict` · owner `Roloria` · repo `verdict` ·
+   workflow `publish-pypi.yml` · environment `pypi`.
+3. The GitHub `pypi` environment **already exists** (created 2026-11-15) and
+   needs no secret: the workflow uses OIDC (`id-token: write`).
+
+**Then release with one command:**
+
+```bash
+sh tools/publish.sh
+```
+
+It refuses a dirty tree, is idempotent on the tag, never force-pushes, and
+pushes `v0.12.0` which triggers OIDC upload. What remains manual: creating the
+GitHub Release, ticking *Publish to GitHub Marketplace*, and moving `v1`.
+
+To verify a wheel locally before tagging:
 
 ```bash
 python -m pip install --upgrade build twine
-python -m build
-python -m twine check dist/*
-git tag v0.12.0 && git push origin v0.12.0   # triggers publish-pypi.yml
+python -m build && python -m twine check dist/*
 ```
 
 Sanity check after it lands:

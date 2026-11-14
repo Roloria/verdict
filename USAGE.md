@@ -183,6 +183,32 @@ matters", not as a small number.
   run. Only the presentation layer is translated: verdict values and `--json`
   output stay English for CI and scripts.
 
+## Claim 提案（补齐协议的另一半）
+
+```bash
+verdict propose report.md --out claims.json
+verdict check report.md --claims-file claims.json
+```
+
+`propose` 是确定性抽取器（无 LLM、无网络、无文件读取），只把**能绑定外部证据**
+的句子变成 claim：`path:line` → `citation_resolves`、文件路径 → `file_exists`、
+白名单命令 → `command_succeeds`、"tests pass" → `tests_actually_prove`、
+"no secrets" → `text_absent`。
+
+数字 / 百分比 / URL 会被**跳过**并记录原因：断言一份文档含有它自己的数字是
+自证循环，没有外部证据；需要人工绑定源文件（未来的 `number_matches_source`）。
+草稿不是结论，跑 `verdict check` 才算数。
+
+## 发布前检查
+
+```bash
+verdict release-check          # 检查包名/版本/workflow/tag/PyPI/environment
+sh tools/publish.sh            # 配好 trusted publisher 后一键打 tag 发布
+```
+
+`release-check` 会列出剩余动作；`publish.sh` 拒绝脏工作区、可重复运行、不 force
+push。详见 RELEASE.md。
+
 ## 零配置起步
 
 ```bash

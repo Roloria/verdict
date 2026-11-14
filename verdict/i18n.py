@@ -98,6 +98,32 @@ MESSAGES: Dict[str, Dict[str, str]] = {
     "init.detected": {"zh-CN": "检测到测试命令：{command}", "en": "detected test command: {command}"},
     "init.next": {"zh-CN": "下一步：{first}", "en": "next: {first}"},
     "cli.sarif": {"zh-CN": "SARIF：{path}", "en": "SARIF: {path}"},
+    "propose.summary": {
+        "zh-CN": "提取 {claims} 条可验证断言，跳过 {skipped} 项（无外部证据）",
+        "en": "extracted {claims} verifiable claims, skipped {skipped} (no external evidence)",
+    },
+    "propose.wrote": {"zh-CN": "草稿已写入 {path}", "en": "draft written to {path}"},
+    "propose.empty": {
+        "zh-CN": "未找到可绑定外部证据的断言（数字/URL 已跳过）；请用规则包或人工补 claim",
+        "en": "no externally-verifiable claims found (numbers/URLs skipped); use rule bundles or add claims manually",
+    },
+    "propose.hint_rules": {"zh-CN": "下一步：{cmd}", "en": "next: {cmd}"},
+    "cli.no_claims": {
+        "zh-CN": "没有可验证的断言：用 --rules、--claims-file 或 --claim 提供（空草稿不算）",
+        "en": "no claims to verify: pass --rules, --claims-file or --claim (an empty draft is not a claim set)",
+    },
+    "propose.hint": {
+        "zh-CN": "下一步：{cmd}",
+        "en": "next: {cmd}",
+    },
+    "release.title": {"zh-CN": "=== 发布前检查 ===", "en": "=== release preflight ==="},
+    "release.ok": {"zh-CN": "  ✓ {item}", "en": "  ✓ {item}"},
+    "release.missing": {"zh-CN": "  ✗ {item}", "en": "  ✗ {item}"},
+    "release.next": {"zh-CN": "下一步：", "en": "Next:"},
+    "release.blocked": {
+        "zh-CN": "仍需在 pypi.org 操作：{items}",
+        "en": "Still needs action on pypi.org: {items}",
+    },
     "bool.yes": {"zh-CN": "是", "en": "true"},
     "bool.no": {"zh-CN": "否", "en": "false"},
 }

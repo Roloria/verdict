@@ -16,6 +16,7 @@ import json
 import os
 import sys
 import time
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from reverify.cli import load_input_bytes
@@ -24,6 +25,8 @@ from reverify.verifier import Claim
 from . import __version__
 from .i18n import LANGS, get_lang, mark_label, set_lang, t, translate_detail
 from .init import initialize, print_init
+from .propose import propose
+from .release import preflight, print_preflight
 from .report import load_json, render_file
 from .sarif import write_sarif
 from .rules import add_bundle, available, load as load_bundle, load_many
@@ -85,7 +88,7 @@ def cmd_check(args: argparse.Namespace) -> None:
         bundle_claims, weights = load_many(args.rules, args.base_dir)
         claims = claims + bundle_claims
     if not claims:
-        raise SystemExit("verdict check needs --rules, --claims-file or --claim '<json>'")
+        raise SystemExit(t("cli.no_claims"))
     data = load_input_bytes(args.target)
     verifier = GateVerifier(
         data,
@@ -163,6 +166,34 @@ def cmd_check(args: argparse.Namespace) -> None:
             },
         )
     sys.exit(code)
+
+
+def cmd_propose(args: argparse.Namespace) -> None:
+    text = load_input_bytes(args.target).decode("utf-8", "replace")
+    doc = propose(text, source=args.target)
+    if args.out:
+        out = Path(args.out)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(doc["claims"], indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        if args.json:
+            print(json.dumps(doc, indent=2, ensure_ascii=False))
+        else:
+            print(t("propose.summary", claims=len(doc["claims"]), skipped=len(doc["skipped"])))
+            print(t("propose.wrote", path=args.out))
+            if doc["claims"]:
+                print(t("propose.hint", cmd=f"verdict check {args.target} --claims-file {args.out}"))
+            else:
+                print(t("propose.empty"))
+                print(t("propose.hint_rules",
+                        cmd=f"verdict check {args.target} --rules ai-tells-density,secrets-pii"))
+    else:
+        print(json.dumps(doc, indent=2, ensure_ascii=False))
+
+
+def cmd_release_check(args: argparse.Namespace) -> None:
+    result = preflight(args.base_dir, check_pypi=not args.offline)
+    print_preflight(result)
+    sys.exit(0 if result["ready"] else 1)
 
 
 def cmd_init(args: argparse.Namespace) -> None:
@@ -251,6 +282,17 @@ def main() -> None:
     c.add_argument("--verbose", action="store_true", help="list passing claims too")
     c.add_argument("--sarif", help="also write SARIF 2.1.0 findings for GitHub code scanning")
     c.set_defaults(func=cmd_check)
+
+    pp = sub.add_parser("propose", parents=[common], help="draft claims from an artifact, deterministically")
+    pp.add_argument("target")
+    pp.add_argument("--out", help="write a claims.json usable by verdict check")
+    pp.add_argument("--json", action="store_true", help="print the full proposal")
+    pp.set_defaults(func=cmd_propose)
+
+    rc = sub.add_parser("release-check", parents=[common], help="preflight for PyPI / Marketplace publishing")
+    rc.add_argument("--base-dir", default=".")
+    rc.add_argument("--offline", action="store_true", help="skip the PyPI lookup")
+    rc.set_defaults(func=cmd_release_check)
 
     ini = sub.add_parser("init", parents=[common], help="bootstrap .verdict/ config + CI in any repo")
     ini.add_argument("--base-dir", default=".")

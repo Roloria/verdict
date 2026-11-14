@@ -29,6 +29,8 @@ verdict kinds                     # 查看全部闸门类型
 verdict rules list                # 查看规则包
 
 verdict init                      # 任意仓库零配置起步：配置 + CI + 钩子
+verdict propose report.md --out claims.json   # 从产物确定性生成 claim 草稿
+verdict check report.md --claims-file claims.json
 verdict check report.md --rules ai-tells-density,secrets-pii
 verdict check report.md --rules ai-tells-density --report gate.html \
   --sarif findings.sarif        # 供 GitHub code scanning 上传
@@ -127,7 +129,8 @@ precision / recall / F1 = 1.000 / 1.000 / 1.000，0 漏放、0 误报，按缺�
 |---|---|
 | 代码 | 完整，全量测试 381+ passed / 55 skipped，自闸 10/10 |
 | PyPI / Marketplace | **未发布** —— 包名 `ai-verdict`（原 `verdict-gate` 已被同名项目占用） |
-| 待办 | 一次性配 PyPI trusted publisher → `v0.12.0` tag → Marketplace，见 [RELEASE.md](RELEASE.md) |
+| 发布前检查 | `verdict release-check`：6✓/2✗，GitHub `pypi` 环境已建、构建依赖已就绪 |
+| 待办 | pypi.org 配 pending trusted publisher → `sh tools/publish.sh` → Marketplace，见 [RELEASE.md](RELEASE.md) |
 
 ## 文档
 

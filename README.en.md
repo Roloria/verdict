@@ -35,6 +35,8 @@ verdict kinds
 verdict rules list
 
 verdict init                      # zero-config bootstrap: config + CI + hook
+verdict propose report.md --out claims.json   # draft claims, deterministically
+verdict check report.md --claims-file claims.json
 verdict check report.md --rules ai-tells-density,secrets-pii
 verdict check report.md --rules ai-tells-density --report gate.html \
   --sarif findings.sarif        # upload to GitHub code scanning
@@ -137,7 +139,8 @@ ID regex firing on badge URLs.
 |---|---|
 | Code | complete; 381+ passed / 55 skipped, self-gate 10/10 |
 | PyPI / Marketplace | **not published** — package name is `ai-verdict` (the original `verdict-gate` was taken) |
-| Next | one-time PyPI trusted publisher → `v0.12.0` tag → Marketplace, see [RELEASE.md](RELEASE.md) |
+| Preflight | `verdict release-check`: 6✓/2✗; the GitHub `pypi` environment and build deps are ready |
+| Next | add a pending publisher on pypi.org → `sh tools/publish.sh` → Marketplace, see [RELEASE.md](RELEASE.md) |
 
 ## Docs
 

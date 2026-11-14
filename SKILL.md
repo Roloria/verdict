@@ -37,6 +37,8 @@ verdict rules list
 
 ## Workflow
 
+Use `verdict propose <artifact> --out claims.json` to draft claims from an artifact instead of hand-writing them. It only extracts assertions that can be bound to external evidence; numbers and URLs are skipped. A proposed claim is not a verified claim — always run `verdict check`.
+
 In a fresh repository, run `verdict init` first — it writes a working `.verdict/` setup and a CI workflow. Add `--sarif findings.sarif` when the run should feed GitHub code scanning.
 
 1. **Write the artifact** to a file. verdict checks files, not chat messages.
