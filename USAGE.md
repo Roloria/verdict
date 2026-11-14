@@ -150,7 +150,13 @@ and gate its own output before reporting done.
 
 ```bash
 npx skills add Roloria/verdict --skill ai-verdict
+# or manually:
+mkdir -p ~/.claude/skills/ai-verdict
+cp skills/ai-verdict/SKILL.md ~/.claude/skills/ai-verdict/SKILL.md
 ```
+
+Both copies (`SKILL.md` at root and `skills/ai-verdict/SKILL.md`) are asserted
+identical by the test suite, so the single-file and skills.sh installs agree.
 
 MCP server over stdio (no SDK dependency), two tools: `verify_claims` and
 `list_rules`.
