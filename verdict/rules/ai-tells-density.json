@@ -1,0 +1,13 @@
+{
+  "name": "ai-tells-density",
+  "version": 1,
+  "description": "Low-false-positive AI-tell gate. A single phrase is normal prose; three distinct patterns in one paragraph is not. Derived from FeedHive/ai-slop-detector (MIT).",
+  "weights": {"slop_density": 0.65},
+  "claims": [
+    {"kind": "slop_density", "preset": "slop-120", "min_hits": 3, "note": "density, not a single word"},
+    {"kind": "text_absent", "value": "在当今快速发展的", "note": "high-confidence ZH tell"},
+    {"kind": "text_absent", "value": "综上所述，", "note": "high-confidence ZH tell"},
+    {"kind": "text_absent", "value": "深度融合", "note": "high-confidence ZH tell"},
+    {"kind": "text_absent", "value": "赋能", "note": "high-confidence ZH tell"}
+  ]
+}

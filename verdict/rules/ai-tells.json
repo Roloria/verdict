@@ -1,9 +1,10 @@
 {
   "name": "ai-tells",
-  "version": 1,
-  "description": "Phrases that mark text as model-generated. Conservative by design: fork and edit, do not trust it blindly.",
-  "weights": {"text_absent": 0.4},
+  "version": 2,
+  "description": "Strict AI-tell gate: exact phrases (EN+ZH) plus a density check derived from 120 catalogued patterns. Fork and edit; opinionated by design.",
+  "weights": {"text_absent": 0.4, "slop_density": 0.65},
   "claims": [
+    {"kind": "slop_density", "preset": "slop-120", "min_hits": 3, "note": "three distinct tells in one paragraph is slop"},
     {"kind": "text_absent", "value": "In today's fast-paced landscape"},
     {"kind": "text_absent", "value": "fast-paced landscape"},
     {"kind": "text_absent", "value": "game changer"},

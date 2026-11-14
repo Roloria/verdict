@@ -4,13 +4,16 @@
 > diffs, generated files — and turns it into a CI gate.
 >
 > New code lives in `verdict/`; `reverify/` is vendored upstream and never edited.
-> → [USAGE.md](USAGE.md) · [VISION.md](VISION.md) · [ITERATION-PLAN.md](ITERATION-PLAN.md) · [ATTRIBUTION.md](ATTRIBUTION.md)
+> → [USAGE.md](USAGE.md) · [SKILL.md](SKILL.md) · [VISION.md](VISION.md) · [ITERATION-PLAN.md](ITERATION-PLAN.md) · [ATTRIBUTION.md](ATTRIBUTION.md)
 >
 > ```bash
-> pip install -e ".[dev]"
-> verdict check report.md --claims-file claims.json --base-dir .
+> pip install ai-verdict
+> verdict rules list
+> verdict check report.md --rules ai-tells-density,secrets-pii --report gate.html
 > # exit 0 grounded · 2 refuted · 3 thin evidence · 4 inconclusive (--strict)
 > ```
+>
+> `npx skills add Roloria/verdict --skill ai-verdict` installs the agent surface.
 
 <h1 align="center">Reverify</h1>
 

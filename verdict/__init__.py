@@ -8,7 +8,7 @@ The reverify/ package is never modified, so upstream merges stay conflict-free.
 Every new gate is a `_check_<kind>` method on GateVerifier.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.12.0"  # keep in sync with pyproject.toml (asserted by tests)
 
 from .verifier import GateVerifier, TEXT_KINDS, rescore
 

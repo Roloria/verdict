@@ -1,4 +1,4 @@
-name: verdict-gate
+name: ai-verdict
 description: >-
   Gate AI output on evidence. Every assertion is bound to a check a deterministic
   tool can run; the job fails on refuted claims (2), thin evidence (3), or — if
@@ -32,7 +32,7 @@ inputs:
     required: false
     default: "refuted,thin"
   version:
-    description: verdict-gate version to install (empty = latest)
+    description: ai-verdict version to install (empty = latest)
     required: false
     default: ""
   report:
@@ -61,8 +61,8 @@ runs:
     - name: install verdict
       shell: bash
       run: |
-        spec="verdict-gate"
-        if [ -n "${{ inputs.version }}" ]; then spec="verdict-gate==${{ inputs.version }}"; fi
+        spec="ai-verdict"
+        if [ -n "${{ inputs.version }}" ]; then spec="ai-verdict==${{ inputs.version }}"; fi
         python -m pip install --upgrade pip
         python -m pip install "$spec"
 

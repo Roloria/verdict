@@ -3,5 +3,9 @@
   {"kind": "file_exists", "path": "USAGE.md", "min_bytes": 500, "note": "usage stays written down"},
   {"kind": "file_exists", "path": "action.yml", "min_bytes": 200, "note": "the CI action is present"},
   {"kind": "text_absent", "pattern": "sk-[A-Za-z0-9]{20,}", "regex": true, "note": "no keys in tracked docs"},
-  {"kind": "command_succeeds", "argv": ["pytest", "-q", "verdict/tests"], "timeout": 300, "note": "the gate suite passes"}
+  {"kind": "file_exists", "path": "SKILL.md", "min_bytes": 500, "note": "the agent surface is present"},
+  {"kind": "file_exists", "path": "eval/RESULTS.md", "min_bytes": 200, "note": "the benchmark has published numbers"},
+  {"kind": "file_exists", "path": "verdict/data/slop_patterns.json", "min_bytes": 1000, "note": "the slop preset ships"},
+  {"kind": "command_succeeds", "argv": ["pytest", "-q", "verdict/tests"], "timeout": 300, "note": "the gate suite passes"},
+  {"kind": "command_succeeds", "argv": ["python", "eval/run.py"], "timeout": 120, "note": "the benchmark stays green"}
 ]

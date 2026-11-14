@@ -1,0 +1,30 @@
+{"id":"clean-01","expected":"clean","defect":"none","text":"The migration rewrote 31 files under src/legacy/. Rollback uses `migrate --undo`."}
+{"id":"clean-02","expected":"clean","defect":"none","text":"We need to delve into the queue latency numbers before deciding on a cache."}
+{"id":"clean-03","expected":"clean","defect":"none","text":"Next week we will take a deep dive into the retry budget and publish the result."}
+{"id":"clean-04","expected":"clean","defect":"none","text":"本次改动调整了重试逻辑，超时从 3 秒改为 8 秒，并补充了两条回归测试。"}
+{"id":"clean-05","expected":"clean","defect":"none","text":"Deploy finished at 14:02 UTC. p95 dropped from 820ms to 310ms."}
+{"id":"clean-06","expected":"clean","defect":"none","text":"The parser now rejects empty arrays. See src/parse.py:88 for the guard."}
+{"id":"clean-07","expected":"clean","defect":"none","text":"It is worth noting that the test suite takes 40 seconds on CI."}
+{"id":"clean-08","expected":"clean","defect":"none","text":"We removed the legacy adapter. Two callers were updated in the same commit."}
+{"id":"clean-09","expected":"clean","defect":"none","text":"Known issue: the exporter still writes BOM markers. Tracking in #418."}
+{"id":"clean-10","expected":"clean","defect":"none","text":"API changes: GET /health now returns 200 with a JSON body instead of plain text."}
+{"id":"clean-11","expected":"clean","defect":"none","text":"这个版本修复了登录态过期后的重定向问题，并更新了错误提示文案。"}
+{"id":"clean-12","expected":"clean","defect":"none","text":"The benchmark ran three times. Median 1.8s, spread under 0.2s."}
+{"id":"clean-13","expected":"clean","defect":"none","text":"One paragraph can contain a single familiar phrase. That alone proves nothing."}
+{"id":"clean-14","expected":"clean","defect":"none","text":"Release 0.12.0 ships the density gate and the test-tampering gate."}
+{"id":"clean-15","expected":"clean","defect":"none","text":"Config: MAX_RETRIES=3, TIMEOUT_MS=8000, BACKOFF=exponential."}
+{"id":"dirty-01","expected":"dirty","defect":"ai-tells-density","text":"Let's delve into this pivotal moment. It's worth noting the ever-evolving landscape, a testament to the tapestry of modern engineering."}
+{"id":"dirty-02","expected":"dirty","defect":"ai-tells-density","text":"In today's fast-paced landscape this is a game changer. It is important to note that seamless integration unlocks the full potential."}
+{"id":"dirty-03","expected":"dirty","defect":"secret","text":"Config: OPENAI_KEY=sk-Abcdefghijklmnopqrstuvwxyz012345"}
+{"id":"dirty-04","expected":"dirty","defect":"secret","text":"CI token ghp_1234567890abcdefghijklmnopqrstuvwxyzAB was rotated yesterday."}
+{"id":"dirty-05","expected":"dirty","defect":"secret","text":"AWS credentials: AKIA1234567890ABCDEF were accidentally committed."}
+{"id":"dirty-06","expected":"dirty","defect":"secret","text":"Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.abcdefghijklmnopqrstuvwxyz123456"}
+{"id":"dirty-07","expected":"dirty","defect":"pii","text":"Employee record: 11010519491231002X, contact 13800138000."}
+{"id":"dirty-08","expected":"dirty","defect":"zh-tells","text":"在当今快速发展的技术浪潮中，本次升级赋能业务，深度融合数据能力，综上所述，成效显著。"}
+{"id":"dirty-09","expected":"dirty","defect":"ai-tells-density","text":"This is not merely a refactor. It is a paradigm shift. A testament to what a small team can unlock when they navigate the complexities of a complex domain."}
+{"id":"dirty-10","expected":"dirty","defect":"secret","text":"-----BEGIN RSA PRIVATE KEY----- was pasted into the incident channel."}
+{"id":"dirty-11","expected":"dirty","defect":"ai-tells-density","text":"In conclusion, it is worth noting that this cutting-edge solution seamlessly integrates a robust tapestry of capabilities."}
+{"id":"dirty-12","expected":"dirty","defect":"secret","parts":["Slack bot token: xox","b-123456789012-1234567890123-AbCdEfGhIjKlMnOpQrStUvWx"],"note":"assembled at runtime so GitHub push protection does not see a token-shaped string"}
+{"id":"dirty-13","expected":"dirty","defect":"zh-tells","text":"值得注意的是，本次方案打造闭环，全方位提升能效，综上所述，值得推广。"}
+{"id":"dirty-14","expected":"dirty","defect":"pii","text":"Test fixture used SSN 123-45-6789 for the signup flow."}
+{"id":"dirty-15","expected":"dirty","defect":"ai-tells-density","text":"Let us delve into the ever-evolving landscape. It is important to note that this tapestry of ideas is a testament to the team, and it is worth noting the realm of possibilities."}

@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "verdict-gate"
+name = "ai-verdict"
 version = "0.12.0"
 description = "A gate AI output has to walk through: every assertion is bound to a check a deterministic tool can run, with evidence, and a CI exit code. Fork of reverify (MIT) — reverify's binary claim protocol, aimed at reports, docs, diffs and generated code."
 readme = "README.md"
@@ -48,10 +48,11 @@ Upstream = "https://github.com/2akouwu/reverify"
 reverify = "reverify.cli:main"
 reverify-mcp = "reverify.mcp_server:run_mcp_server"
 verdict = "verdict.cli:main"
+ai-verdict-mcp = "verdict.mcp_server:main"
 
 [tool.setuptools]
 packages = ["reverify", "reverify.tests", "verdict", "verdict.tests"]
 
 [tool.setuptools.package-data]
 reverify = ["py.typed", "plugins/opencode/*.js"]
-verdict = ["rules/*.json"]
+verdict = ["rules/*.json", "data/*.json"]

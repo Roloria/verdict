@@ -1,0 +1,1352 @@
+{
+  "name": "slop-patterns",
+  "version": 1,
+  "source": "FeedHive/ai-slop-detector (MIT), derived by tools/build_slop_patterns.py",
+  "note": "Machine-checkable phrases only; the full 120-pattern catalogue stays in tools/vendor/.",
+  "patterns": [
+    {
+      "id": "V-01",
+      "category": "vocabulary",
+      "label": "Delve and friends",
+      "phrase": "delve",
+      "regex": "(?<!\\w)delve(?!\\w)"
+    },
+    {
+      "id": "V-01",
+      "category": "vocabulary",
+      "label": "Delve and friends",
+      "phrase": "dive into",
+      "regex": "(?<!\\w)dive\\ into(?!\\w)"
+    },
+    {
+      "id": "V-01",
+      "category": "vocabulary",
+      "label": "Delve and friends",
+      "phrase": "deep dive",
+      "regex": "(?<!\\w)deep\\ dive(?!\\w)"
+    },
+    {
+      "id": "V-01",
+      "category": "vocabulary",
+      "label": "Delve and friends",
+      "phrase": "unpack",
+      "regex": "(?<!\\w)unpack(?!\\w)"
+    },
+    {
+      "id": "V-01",
+      "category": "vocabulary",
+      "label": "Delve and friends",
+      "phrase": "explore",
+      "regex": "(?<!\\w)explore(?!\\w)"
+    },
+    {
+      "id": "V-02",
+      "category": "vocabulary",
+      "label": "Tapestry words",
+      "phrase": "tapestry",
+      "regex": "(?<!\\w)tapestry(?!\\w)"
+    },
+    {
+      "id": "V-02",
+      "category": "vocabulary",
+      "label": "Tapestry words",
+      "phrase": "landscape",
+      "regex": "(?<!\\w)landscape(?!\\w)"
+    },
+    {
+      "id": "V-02",
+      "category": "vocabulary",
+      "label": "Tapestry words",
+      "phrase": "realm",
+      "regex": "(?<!\\w)realm(?!\\w)"
+    },
+    {
+      "id": "V-02",
+      "category": "vocabulary",
+      "label": "Tapestry words",
+      "phrase": "sphere",
+      "regex": "(?<!\\w)sphere(?!\\w)"
+    },
+    {
+      "id": "V-02",
+      "category": "vocabulary",
+      "label": "Tapestry words",
+      "phrase": "ecosystem",
+      "regex": "(?<!\\w)ecosystem(?!\\w)"
+    },
+    {
+      "id": "V-02",
+      "category": "vocabulary",
+      "label": "Tapestry words",
+      "phrase": "fabric",
+      "regex": "(?<!\\w)fabric(?!\\w)"
+    },
+    {
+      "id": "V-03",
+      "category": "vocabulary",
+      "label": "Testament and beacon",
+      "phrase": "testament to",
+      "regex": "(?<!\\w)testament\\ to(?!\\w)"
+    },
+    {
+      "id": "V-03",
+      "category": "vocabulary",
+      "label": "Testament and beacon",
+      "phrase": "beacon of",
+      "regex": "(?<!\\w)beacon\\ of(?!\\w)"
+    },
+    {
+      "id": "V-03",
+      "category": "vocabulary",
+      "label": "Testament and beacon",
+      "phrase": "embodiment of",
+      "regex": "(?<!\\w)embodiment\\ of(?!\\w)"
+    },
+    {
+      "id": "V-03",
+      "category": "vocabulary",
+      "label": "Testament and beacon",
+      "phrase": "hallmark of",
+      "regex": "(?<!\\w)hallmark\\ of(?!\\w)"
+    },
+    {
+      "id": "V-04",
+      "category": "vocabulary",
+      "label": "Pivotal and crucial",
+      "phrase": "pivotal",
+      "regex": "(?<!\\w)pivotal(?!\\w)"
+    },
+    {
+      "id": "V-04",
+      "category": "vocabulary",
+      "label": "Pivotal and crucial",
+      "phrase": "crucial",
+      "regex": "(?<!\\w)crucial(?!\\w)"
+    },
+    {
+      "id": "V-04",
+      "category": "vocabulary",
+      "label": "Pivotal and crucial",
+      "phrase": "vital",
+      "regex": "(?<!\\w)vital(?!\\w)"
+    },
+    {
+      "id": "V-04",
+      "category": "vocabulary",
+      "label": "Pivotal and crucial",
+      "phrase": "paramount",
+      "regex": "(?<!\\w)paramount(?!\\w)"
+    },
+    {
+      "id": "V-04",
+      "category": "vocabulary",
+      "label": "Pivotal and crucial",
+      "phrase": "critical",
+      "regex": "(?<!\\w)critical(?!\\w)"
+    },
+    {
+      "id": "V-05",
+      "category": "vocabulary",
+      "label": "Showcase verbs",
+      "phrase": "showcase",
+      "regex": "(?<!\\w)showcase(?!\\w)"
+    },
+    {
+      "id": "V-05",
+      "category": "vocabulary",
+      "label": "Showcase verbs",
+      "phrase": "highlight",
+      "regex": "(?<!\\w)highlight(?!\\w)"
+    },
+    {
+      "id": "V-05",
+      "category": "vocabulary",
+      "label": "Showcase verbs",
+      "phrase": "underscore",
+      "regex": "(?<!\\w)underscore(?!\\w)"
+    },
+    {
+      "id": "V-05",
+      "category": "vocabulary",
+      "label": "Showcase verbs",
+      "phrase": "emphasize",
+      "regex": "(?<!\\w)emphasize(?!\\w)"
+    },
+    {
+      "id": "V-05",
+      "category": "vocabulary",
+      "label": "Showcase verbs",
+      "phrase": "spotlight",
+      "regex": "(?<!\\w)spotlight(?!\\w)"
+    },
+    {
+      "id": "V-06",
+      "category": "vocabulary",
+      "label": "Foster and cultivate",
+      "phrase": "foster",
+      "regex": "(?<!\\w)foster(?!\\w)"
+    },
+    {
+      "id": "V-06",
+      "category": "vocabulary",
+      "label": "Foster and cultivate",
+      "phrase": "cultivate",
+      "regex": "(?<!\\w)cultivate(?!\\w)"
+    },
+    {
+      "id": "V-06",
+      "category": "vocabulary",
+      "label": "Foster and cultivate",
+      "phrase": "nurture",
+      "regex": "(?<!\\w)nurture(?!\\w)"
+    },
+    {
+      "id": "V-07",
+      "category": "vocabulary",
+      "label": "Leverage and utilize",
+      "phrase": "leverage",
+      "regex": "(?<!\\w)leverage(?!\\w)"
+    },
+    {
+      "id": "V-07",
+      "category": "vocabulary",
+      "label": "Leverage and utilize",
+      "phrase": "utilize",
+      "regex": "(?<!\\w)utilize(?!\\w)"
+    },
+    {
+      "id": "V-07",
+      "category": "vocabulary",
+      "label": "Leverage and utilize",
+      "phrase": "harness",
+      "regex": "(?<!\\w)harness(?!\\w)"
+    },
+    {
+      "id": "V-07",
+      "category": "vocabulary",
+      "label": "Leverage and utilize",
+      "phrase": "capitalize on",
+      "regex": "(?<!\\w)capitalize\\ on(?!\\w)"
+    },
+    {
+      "id": "V-08",
+      "category": "vocabulary",
+      "label": "Elevate and enhance",
+      "phrase": "elevate",
+      "regex": "(?<!\\w)elevate(?!\\w)"
+    },
+    {
+      "id": "V-08",
+      "category": "vocabulary",
+      "label": "Elevate and enhance",
+      "phrase": "enhance",
+      "regex": "(?<!\\w)enhance(?!\\w)"
+    },
+    {
+      "id": "V-08",
+      "category": "vocabulary",
+      "label": "Elevate and enhance",
+      "phrase": "empower",
+      "regex": "(?<!\\w)empower(?!\\w)"
+    },
+    {
+      "id": "V-08",
+      "category": "vocabulary",
+      "label": "Elevate and enhance",
+      "phrase": "supercharge",
+      "regex": "(?<!\\w)supercharge(?!\\w)"
+    },
+    {
+      "id": "V-08",
+      "category": "vocabulary",
+      "label": "Elevate and enhance",
+      "phrase": "unlock",
+      "regex": "(?<!\\w)unlock(?!\\w)"
+    },
+    {
+      "id": "V-08",
+      "category": "vocabulary",
+      "label": "Elevate and enhance",
+      "phrase": "amplify",
+      "regex": "(?<!\\w)amplify(?!\\w)"
+    },
+    {
+      "id": "V-09",
+      "category": "vocabulary",
+      "label": "Seamless and robust",
+      "phrase": "seamless",
+      "regex": "(?<!\\w)seamless(?!\\w)"
+    },
+    {
+      "id": "V-09",
+      "category": "vocabulary",
+      "label": "Seamless and robust",
+      "phrase": "robust",
+      "regex": "(?<!\\w)robust(?!\\w)"
+    },
+    {
+      "id": "V-09",
+      "category": "vocabulary",
+      "label": "Seamless and robust",
+      "phrase": "cutting-edge",
+      "regex": "(?<!\\w)cutting\\-edge(?!\\w)"
+    },
+    {
+      "id": "V-09",
+      "category": "vocabulary",
+      "label": "Seamless and robust",
+      "phrase": "state-of-the-art",
+      "regex": "(?<!\\w)state\\-of\\-the\\-art(?!\\w)"
+    },
+    {
+      "id": "V-09",
+      "category": "vocabulary",
+      "label": "Seamless and robust",
+      "phrase": "best-in-class",
+      "regex": "(?<!\\w)best\\-in\\-class(?!\\w)"
+    },
+    {
+      "id": "V-09",
+      "category": "vocabulary",
+      "label": "Seamless and robust",
+      "phrase": "world-class",
+      "regex": "(?<!\\w)world\\-class(?!\\w)"
+    },
+    {
+      "id": "V-10",
+      "category": "vocabulary",
+      "label": "Intricate and multifaceted",
+      "phrase": "intricate",
+      "regex": "(?<!\\w)intricate(?!\\w)"
+    },
+    {
+      "id": "V-10",
+      "category": "vocabulary",
+      "label": "Intricate and multifaceted",
+      "phrase": "multifaceted",
+      "regex": "(?<!\\w)multifaceted(?!\\w)"
+    },
+    {
+      "id": "V-10",
+      "category": "vocabulary",
+      "label": "Intricate and multifaceted",
+      "phrase": "nuanced",
+      "regex": "(?<!\\w)nuanced(?!\\w)"
+    },
+    {
+      "id": "V-10",
+      "category": "vocabulary",
+      "label": "Intricate and multifaceted",
+      "phrase": "complex",
+      "regex": "(?<!\\w)complex(?!\\w)"
+    },
+    {
+      "id": "V-11",
+      "category": "vocabulary",
+      "label": "Meticulous",
+      "phrase": "meticulous",
+      "regex": "(?<!\\w)meticulous(?!\\w)"
+    },
+    {
+      "id": "V-11",
+      "category": "vocabulary",
+      "label": "Meticulous",
+      "phrase": "meticulously",
+      "regex": "(?<!\\w)meticulously(?!\\w)"
+    },
+    {
+      "id": "V-11",
+      "category": "vocabulary",
+      "label": "Meticulous",
+      "phrase": "painstakingly",
+      "regex": "(?<!\\w)painstakingly(?!\\w)"
+    },
+    {
+      "id": "V-11",
+      "category": "vocabulary",
+      "label": "Meticulous",
+      "phrase": "carefully crafted",
+      "regex": "(?<!\\w)carefully\\ crafted(?!\\w)"
+    },
+    {
+      "id": "V-12",
+      "category": "vocabulary",
+      "label": "Vibrant and rich",
+      "phrase": "vibrant",
+      "regex": "(?<!\\w)vibrant(?!\\w)"
+    },
+    {
+      "id": "V-12",
+      "category": "vocabulary",
+      "label": "Vibrant and rich",
+      "phrase": "bustling",
+      "regex": "(?<!\\w)bustling(?!\\w)"
+    },
+    {
+      "id": "V-12",
+      "category": "vocabulary",
+      "label": "Vibrant and rich",
+      "phrase": "thriving",
+      "regex": "(?<!\\w)thriving(?!\\w)"
+    },
+    {
+      "id": "V-12",
+      "category": "vocabulary",
+      "label": "Vibrant and rich",
+      "phrase": "dynamic",
+      "regex": "(?<!\\w)dynamic(?!\\w)"
+    },
+    {
+      "id": "V-13",
+      "category": "vocabulary",
+      "label": "Journey and embark",
+      "phrase": "journey",
+      "regex": "(?<!\\w)journey(?!\\w)"
+    },
+    {
+      "id": "V-13",
+      "category": "vocabulary",
+      "label": "Journey and embark",
+      "phrase": "embark",
+      "regex": "(?<!\\w)embark(?!\\w)"
+    },
+    {
+      "id": "V-13",
+      "category": "vocabulary",
+      "label": "Journey and embark",
+      "phrase": "navigate",
+      "regex": "(?<!\\w)navigate(?!\\w)"
+    },
+    {
+      "id": "V-13",
+      "category": "vocabulary",
+      "label": "Journey and embark",
+      "phrase": "voyage",
+      "regex": "(?<!\\w)voyage(?!\\w)"
+    },
+    {
+      "id": "V-14",
+      "category": "vocabulary",
+      "label": "Game changer",
+      "phrase": "game changer",
+      "regex": "(?<!\\w)game\\ changer(?!\\w)"
+    },
+    {
+      "id": "V-14",
+      "category": "vocabulary",
+      "label": "Game changer",
+      "phrase": "revolutionary",
+      "regex": "(?<!\\w)revolutionary(?!\\w)"
+    },
+    {
+      "id": "V-14",
+      "category": "vocabulary",
+      "label": "Game changer",
+      "phrase": "groundbreaking",
+      "regex": "(?<!\\w)groundbreaking(?!\\w)"
+    },
+    {
+      "id": "V-14",
+      "category": "vocabulary",
+      "label": "Game changer",
+      "phrase": "transformative",
+      "regex": "(?<!\\w)transformative(?!\\w)"
+    },
+    {
+      "id": "V-14",
+      "category": "vocabulary",
+      "label": "Game changer",
+      "phrase": "paradigm shift",
+      "regex": "(?<!\\w)paradigm\\ shift(?!\\w)"
+    },
+    {
+      "id": "V-15",
+      "category": "vocabulary",
+      "label": "Transition adverbs",
+      "phrase": "Additionally",
+      "regex": "(?<!\\w)Additionally(?!\\w)"
+    },
+    {
+      "id": "V-15",
+      "category": "vocabulary",
+      "label": "Transition adverbs",
+      "phrase": "Furthermore",
+      "regex": "(?<!\\w)Furthermore(?!\\w)"
+    },
+    {
+      "id": "V-15",
+      "category": "vocabulary",
+      "label": "Transition adverbs",
+      "phrase": "Moreover",
+      "regex": "(?<!\\w)Moreover(?!\\w)"
+    },
+    {
+      "id": "V-15",
+      "category": "vocabulary",
+      "label": "Transition adverbs",
+      "phrase": "Notably",
+      "regex": "(?<!\\w)Notably(?!\\w)"
+    },
+    {
+      "id": "V-15",
+      "category": "vocabulary",
+      "label": "Transition adverbs",
+      "phrase": "Importantly",
+      "regex": "(?<!\\w)Importantly(?!\\w)"
+    },
+    {
+      "id": "V-16",
+      "category": "vocabulary",
+      "label": "Empty intensifiers",
+      "phrase": "truly",
+      "regex": "(?<!\\w)truly(?!\\w)"
+    },
+    {
+      "id": "V-16",
+      "category": "vocabulary",
+      "label": "Empty intensifiers",
+      "phrase": "incredibly",
+      "regex": "(?<!\\w)incredibly(?!\\w)"
+    },
+    {
+      "id": "V-16",
+      "category": "vocabulary",
+      "label": "Empty intensifiers",
+      "phrase": "deeply",
+      "regex": "(?<!\\w)deeply(?!\\w)"
+    },
+    {
+      "id": "V-16",
+      "category": "vocabulary",
+      "label": "Empty intensifiers",
+      "phrase": "profoundly",
+      "regex": "(?<!\\w)profoundly(?!\\w)"
+    },
+    {
+      "id": "V-16",
+      "category": "vocabulary",
+      "label": "Empty intensifiers",
+      "phrase": "remarkably",
+      "regex": "(?<!\\w)remarkably(?!\\w)"
+    },
+    {
+      "id": "V-16",
+      "category": "vocabulary",
+      "label": "Empty intensifiers",
+      "phrase": "fundamentally",
+      "regex": "(?<!\\w)fundamentally(?!\\w)"
+    },
+    {
+      "id": "V-17",
+      "category": "vocabulary",
+      "label": "Quietly",
+      "phrase": "quietly",
+      "regex": "(?<!\\w)quietly(?!\\w)"
+    },
+    {
+      "id": "V-17",
+      "category": "vocabulary",
+      "label": "Quietly",
+      "phrase": "silently",
+      "regex": "(?<!\\w)silently(?!\\w)"
+    },
+    {
+      "id": "V-17",
+      "category": "vocabulary",
+      "label": "Quietly",
+      "phrase": "subtly",
+      "regex": "(?<!\\w)subtly(?!\\w)"
+    },
+    {
+      "id": "V-18",
+      "category": "vocabulary",
+      "label": "Align and resonate",
+      "phrase": "align with",
+      "regex": "(?<!\\w)align\\ with(?!\\w)"
+    },
+    {
+      "id": "V-18",
+      "category": "vocabulary",
+      "label": "Align and resonate",
+      "phrase": "resonate with",
+      "regex": "(?<!\\w)resonate\\ with(?!\\w)"
+    },
+    {
+      "id": "V-18",
+      "category": "vocabulary",
+      "label": "Align and resonate",
+      "phrase": "speak to",
+      "regex": "(?<!\\w)speak\\ to(?!\\w)"
+    },
+    {
+      "id": "V-18",
+      "category": "vocabulary",
+      "label": "Align and resonate",
+      "phrase": "in line with",
+      "regex": "(?<!\\w)in\\ line\\ with(?!\\w)"
+    },
+    {
+      "id": "V-19",
+      "category": "vocabulary",
+      "label": "Key as an adjective",
+      "phrase": "key insight",
+      "regex": "(?<!\\w)key\\ insight(?!\\w)"
+    },
+    {
+      "id": "V-19",
+      "category": "vocabulary",
+      "label": "Key as an adjective",
+      "phrase": "key takeaway",
+      "regex": "(?<!\\w)key\\ takeaway(?!\\w)"
+    },
+    {
+      "id": "V-19",
+      "category": "vocabulary",
+      "label": "Key as an adjective",
+      "phrase": "key factor",
+      "regex": "(?<!\\w)key\\ factor(?!\\w)"
+    },
+    {
+      "id": "V-19",
+      "category": "vocabulary",
+      "label": "Key as an adjective",
+      "phrase": "key role",
+      "regex": "(?<!\\w)key\\ role(?!\\w)"
+    },
+    {
+      "id": "V-20",
+      "category": "vocabulary",
+      "label": "Era words",
+      "phrase": "in today's fast-paced world",
+      "regex": "(?<!\\w)in\\ today's\\ fast\\-paced\\ world(?!\\w)"
+    },
+    {
+      "id": "V-20",
+      "category": "vocabulary",
+      "label": "Era words",
+      "phrase": "in the digital age",
+      "regex": "(?<!\\w)in\\ the\\ digital\\ age(?!\\w)"
+    },
+    {
+      "id": "V-20",
+      "category": "vocabulary",
+      "label": "Era words",
+      "phrase": "in an era of",
+      "regex": "(?<!\\w)in\\ an\\ era\\ of(?!\\w)"
+    },
+    {
+      "id": "V-20",
+      "category": "vocabulary",
+      "label": "Era words",
+      "phrase": "now more than ever",
+      "regex": "(?<!\\w)now\\ more\\ than\\ ever(?!\\w)"
+    },
+    {
+      "id": "P-01",
+      "category": "stock-phrases",
+      "label": "Worth noting",
+      "phrase": "it's worth noting",
+      "regex": "(?<!\\w)it's\\ worth\\ noting(?!\\w)"
+    },
+    {
+      "id": "P-01",
+      "category": "stock-phrases",
+      "label": "Worth noting",
+      "phrase": "it's important to note",
+      "regex": "(?<!\\w)it's\\ important\\ to\\ note(?!\\w)"
+    },
+    {
+      "id": "P-01",
+      "category": "stock-phrases",
+      "label": "Worth noting",
+      "phrase": "it should be noted",
+      "regex": "(?<!\\w)it\\ should\\ be\\ noted(?!\\w)"
+    },
+    {
+      "id": "P-02",
+      "category": "stock-phrases",
+      "label": "At its core",
+      "phrase": "at its core",
+      "regex": "(?<!\\w)at\\ its\\ core(?!\\w)"
+    },
+    {
+      "id": "P-02",
+      "category": "stock-phrases",
+      "label": "At its core",
+      "phrase": "at the end of the day",
+      "regex": "(?<!\\w)at\\ the\\ end\\ of\\ the\\ day(?!\\w)"
+    },
+    {
+      "id": "P-02",
+      "category": "stock-phrases",
+      "label": "At its core",
+      "phrase": "when all is said and done",
+      "regex": "(?<!\\w)when\\ all\\ is\\ said\\ and\\ done(?!\\w)"
+    },
+    {
+      "id": "P-02",
+      "category": "stock-phrases",
+      "label": "At its core",
+      "phrase": "ultimately",
+      "regex": "(?<!\\w)ultimately(?!\\w)"
+    },
+    {
+      "id": "P-03",
+      "category": "stock-phrases",
+      "label": "When it comes to",
+      "phrase": "when it comes to",
+      "regex": "(?<!\\w)when\\ it\\ comes\\ to(?!\\w)"
+    },
+    {
+      "id": "P-03",
+      "category": "stock-phrases",
+      "label": "When it comes to",
+      "phrase": "in terms of",
+      "regex": "(?<!\\w)in\\ terms\\ of(?!\\w)"
+    },
+    {
+      "id": "P-03",
+      "category": "stock-phrases",
+      "label": "When it comes to",
+      "phrase": "with regard to",
+      "regex": "(?<!\\w)with\\ regard\\ to(?!\\w)"
+    },
+    {
+      "id": "P-03",
+      "category": "stock-phrases",
+      "label": "When it comes to",
+      "phrase": "in the world of",
+      "regex": "(?<!\\w)in\\ the\\ world\\ of(?!\\w)"
+    },
+    {
+      "id": "P-04",
+      "category": "stock-phrases",
+      "label": "Let's dive in",
+      "phrase": "let's dive in",
+      "regex": "(?<!\\w)let's\\ dive\\ in(?!\\w)"
+    },
+    {
+      "id": "P-04",
+      "category": "stock-phrases",
+      "label": "Let's dive in",
+      "phrase": "let's get started",
+      "regex": "(?<!\\w)let's\\ get\\ started(?!\\w)"
+    },
+    {
+      "id": "P-04",
+      "category": "stock-phrases",
+      "label": "Let's dive in",
+      "phrase": "buckle up",
+      "regex": "(?<!\\w)buckle\\ up(?!\\w)"
+    },
+    {
+      "id": "P-04",
+      "category": "stock-phrases",
+      "label": "Let's dive in",
+      "phrase": "without further ado",
+      "regex": "(?<!\\w)without\\ further\\ ado(?!\\w)"
+    },
+    {
+      "id": "P-05",
+      "category": "stock-phrases",
+      "label": "Plays a role",
+      "phrase": "plays a role in",
+      "regex": "(?<!\\w)plays\\ a\\ role\\ in(?!\\w)"
+    },
+    {
+      "id": "P-05",
+      "category": "stock-phrases",
+      "label": "Plays a role",
+      "phrase": "contributes to",
+      "regex": "(?<!\\w)contributes\\ to(?!\\w)"
+    },
+    {
+      "id": "P-05",
+      "category": "stock-phrases",
+      "label": "Plays a role",
+      "phrase": "is a factor in",
+      "regex": "(?<!\\w)is\\ a\\ factor\\ in(?!\\w)"
+    },
+    {
+      "id": "P-06",
+      "category": "stock-phrases",
+      "label": "Stands as",
+      "phrase": "stands as",
+      "regex": "(?<!\\w)stands\\ as(?!\\w)"
+    },
+    {
+      "id": "P-06",
+      "category": "stock-phrases",
+      "label": "Stands as",
+      "phrase": "serves as",
+      "regex": "(?<!\\w)serves\\ as(?!\\w)"
+    },
+    {
+      "id": "P-06",
+      "category": "stock-phrases",
+      "label": "Stands as",
+      "phrase": "functions as",
+      "regex": "(?<!\\w)functions\\ as(?!\\w)"
+    },
+    {
+      "id": "P-06",
+      "category": "stock-phrases",
+      "label": "Stands as",
+      "phrase": "acts as",
+      "regex": "(?<!\\w)acts\\ as(?!\\w)"
+    },
+    {
+      "id": "P-07",
+      "category": "stock-phrases",
+      "label": "Navigate the complexities",
+      "phrase": "navigate the complexities of",
+      "regex": "(?<!\\w)navigate\\ the\\ complexities\\ of(?!\\w)"
+    },
+    {
+      "id": "P-07",
+      "category": "stock-phrases",
+      "label": "Navigate the complexities",
+      "phrase": "the ins and outs of",
+      "regex": "(?<!\\w)the\\ ins\\ and\\ outs\\ of(?!\\w)"
+    },
+    {
+      "id": "P-07",
+      "category": "stock-phrases",
+      "label": "Navigate the complexities",
+      "phrase": "the nuances of",
+      "regex": "(?<!\\w)the\\ nuances\\ of(?!\\w)"
+    },
+    {
+      "id": "P-08",
+      "category": "stock-phrases",
+      "label": "Whether you're X or Y",
+      "phrase": "Whether you're a beginner or a pro",
+      "regex": "(?<!\\w)Whether\\ you're\\ a\\ beginner\\ or\\ a\\ pro(?!\\w)"
+    },
+    {
+      "id": "P-08",
+      "category": "stock-phrases",
+      "label": "Whether you're X or Y",
+      "phrase": "from startups to enterprises",
+      "regex": "(?<!\\w)from\\ startups\\ to\\ enterprises(?!\\w)"
+    },
+    {
+      "id": "P-09",
+      "category": "stock-phrases",
+      "label": "Look no further",
+      "phrase": "look no further",
+      "regex": "(?<!\\w)look\\ no\\ further(?!\\w)"
+    },
+    {
+      "id": "P-09",
+      "category": "stock-phrases",
+      "label": "Look no further",
+      "phrase": "you've come to the right place",
+      "regex": "(?<!\\w)you've\\ come\\ to\\ the\\ right\\ place(?!\\w)"
+    },
+    {
+      "id": "P-09",
+      "category": "stock-phrases",
+      "label": "Look no further",
+      "phrase": "this is your ultimate guide",
+      "regex": "(?<!\\w)this\\ is\\ your\\ ultimate\\ guide(?!\\w)"
+    },
+    {
+      "id": "P-10",
+      "category": "stock-phrases",
+      "label": "Unlock the power",
+      "phrase": "unlock the power of",
+      "regex": "(?<!\\w)unlock\\ the\\ power\\ of(?!\\w)"
+    },
+    {
+      "id": "P-10",
+      "category": "stock-phrases",
+      "label": "Unlock the power",
+      "phrase": "harness the potential of",
+      "regex": "(?<!\\w)harness\\ the\\ potential\\ of(?!\\w)"
+    },
+    {
+      "id": "P-10",
+      "category": "stock-phrases",
+      "label": "Unlock the power",
+      "phrase": "take it to the next level",
+      "regex": "(?<!\\w)take\\ it\\ to\\ the\\ next\\ level(?!\\w)"
+    },
+    {
+      "id": "P-11",
+      "category": "stock-phrases",
+      "label": "Here's the thing",
+      "phrase": "here's the thing",
+      "regex": "(?<!\\w)here's\\ the\\ thing(?!\\w)"
+    },
+    {
+      "id": "P-11",
+      "category": "stock-phrases",
+      "label": "Here's the thing",
+      "phrase": "here's the deal",
+      "regex": "(?<!\\w)here's\\ the\\ deal(?!\\w)"
+    },
+    {
+      "id": "P-11",
+      "category": "stock-phrases",
+      "label": "Here's the thing",
+      "phrase": "let me be clear",
+      "regex": "(?<!\\w)let\\ me\\ be\\ clear(?!\\w)"
+    },
+    {
+      "id": "P-11",
+      "category": "stock-phrases",
+      "label": "Here's the thing",
+      "phrase": "I'll be honest",
+      "regex": "(?<!\\w)I'll\\ be\\ honest(?!\\w)"
+    },
+    {
+      "id": "P-11",
+      "category": "stock-phrases",
+      "label": "Here's the thing",
+      "phrase": "I'll be straight with you",
+      "regex": "(?<!\\w)I'll\\ be\\ straight\\ with\\ you(?!\\w)"
+    },
+    {
+      "id": "P-12",
+      "category": "stock-phrases",
+      "label": "The truth is",
+      "phrase": "the truth is",
+      "regex": "(?<!\\w)the\\ truth\\ is(?!\\w)"
+    },
+    {
+      "id": "P-12",
+      "category": "stock-phrases",
+      "label": "The truth is",
+      "phrase": "the reality is",
+      "regex": "(?<!\\w)the\\ reality\\ is(?!\\w)"
+    },
+    {
+      "id": "P-12",
+      "category": "stock-phrases",
+      "label": "The truth is",
+      "phrase": "the uncomfortable truth",
+      "regex": "(?<!\\w)the\\ uncomfortable\\ truth(?!\\w)"
+    },
+    {
+      "id": "P-12",
+      "category": "stock-phrases",
+      "label": "The truth is",
+      "phrase": "the hard truth",
+      "regex": "(?<!\\w)the\\ hard\\ truth(?!\\w)"
+    },
+    {
+      "id": "P-13",
+      "category": "stock-phrases",
+      "label": "Sign-off clichés",
+      "phrase": "I hope this helps",
+      "regex": "(?<!\\w)I\\ hope\\ this\\ helps(?!\\w)"
+    },
+    {
+      "id": "P-13",
+      "category": "stock-phrases",
+      "label": "Sign-off clichés",
+      "phrase": "happy writing",
+      "regex": "(?<!\\w)happy\\ writing(?!\\w)"
+    },
+    {
+      "id": "P-13",
+      "category": "stock-phrases",
+      "label": "Sign-off clichés",
+      "phrase": "feel free to reach out",
+      "regex": "(?<!\\w)feel\\ free\\ to\\ reach\\ out(?!\\w)"
+    },
+    {
+      "id": "P-13",
+      "category": "stock-phrases",
+      "label": "Sign-off clichés",
+      "phrase": "let me know if you have any questions",
+      "regex": "(?<!\\w)let\\ me\\ know\\ if\\ you\\ have\\ any\\ questions(?!\\w)"
+    },
+    {
+      "id": "P-14",
+      "category": "stock-phrases",
+      "label": "Summary openers",
+      "phrase": "In conclusion",
+      "regex": "(?<!\\w)In\\ conclusion(?!\\w)"
+    },
+    {
+      "id": "P-14",
+      "category": "stock-phrases",
+      "label": "Summary openers",
+      "phrase": "In summary",
+      "regex": "(?<!\\w)In\\ summary(?!\\w)"
+    },
+    {
+      "id": "P-14",
+      "category": "stock-phrases",
+      "label": "Summary openers",
+      "phrase": "To sum up",
+      "regex": "(?<!\\w)To\\ sum\\ up(?!\\w)"
+    },
+    {
+      "id": "P-14",
+      "category": "stock-phrases",
+      "label": "Summary openers",
+      "phrase": "Overall",
+      "regex": "(?<!\\w)Overall(?!\\w)"
+    },
+    {
+      "id": "P-14",
+      "category": "stock-phrases",
+      "label": "Summary openers",
+      "phrase": "All in all",
+      "regex": "(?<!\\w)All\\ in\\ all(?!\\w)"
+    },
+    {
+      "id": "P-15",
+      "category": "stock-phrases",
+      "label": "Vague future",
+      "phrase": "the future is bright",
+      "regex": "(?<!\\w)the\\ future\\ is\\ bright(?!\\w)"
+    },
+    {
+      "id": "P-15",
+      "category": "stock-phrases",
+      "label": "Vague future",
+      "phrase": "the possibilities are endless",
+      "regex": "(?<!\\w)the\\ possibilities\\ are\\ endless(?!\\w)"
+    },
+    {
+      "id": "P-15",
+      "category": "stock-phrases",
+      "label": "Vague future",
+      "phrase": "only time will tell",
+      "regex": "(?<!\\w)only\\ time\\ will\\ tell(?!\\w)"
+    },
+    {
+      "id": "P-15",
+      "category": "stock-phrases",
+      "label": "Vague future",
+      "phrase": "the sky's the limit",
+      "regex": "(?<!\\w)the\\ sky's\\ the\\ limit(?!\\w)"
+    },
+    {
+      "id": "S-06",
+      "category": "sentence-patterns",
+      "label": "The obvious question",
+      "phrase": "The obvious question is",
+      "regex": "(?<!\\w)The\\ obvious\\ question\\ is(?!\\w)"
+    },
+    {
+      "id": "S-06",
+      "category": "sentence-patterns",
+      "label": "The obvious question",
+      "phrase": "You might be wondering",
+      "regex": "(?<!\\w)You\\ might\\ be\\ wondering(?!\\w)"
+    },
+    {
+      "id": "S-08",
+      "category": "sentence-patterns",
+      "label": "Faux insight",
+      "phrase": "What nobody tells you",
+      "regex": "(?<!\\w)What\\ nobody\\ tells\\ you(?!\\w)"
+    },
+    {
+      "id": "S-08",
+      "category": "sentence-patterns",
+      "label": "Faux insight",
+      "phrase": "the part most people miss",
+      "regex": "(?<!\\w)the\\ part\\ most\\ people\\ miss(?!\\w)"
+    },
+    {
+      "id": "S-08",
+      "category": "sentence-patterns",
+      "label": "Faux insight",
+      "phrase": "here's what most get wrong",
+      "regex": "(?<!\\w)here's\\ what\\ most\\ get\\ wrong(?!\\w)"
+    },
+    {
+      "id": "S-20",
+      "category": "sentence-patterns",
+      "label": "From X to Y range",
+      "phrase": "from strategy to execution",
+      "regex": "(?<!\\w)from\\ strategy\\ to\\ execution(?!\\w)"
+    },
+    {
+      "id": "S-22",
+      "category": "sentence-patterns",
+      "label": "Rhetorical self-correction",
+      "phrase": "Or rather",
+      "regex": "(?<!\\w)Or\\ rather(?!\\w)"
+    },
+    {
+      "id": "R-11",
+      "category": "structure-and-rhythm",
+      "label": "Fake-unscripted scaffolding",
+      "phrase": "And honestly",
+      "regex": "(?<!\\w)And\\ honestly(?!\\w)"
+    },
+    {
+      "id": "R-11",
+      "category": "structure-and-rhythm",
+      "label": "Fake-unscripted scaffolding",
+      "phrase": "And look",
+      "regex": "(?<!\\w)And\\ look(?!\\w)"
+    },
+    {
+      "id": "R-11",
+      "category": "structure-and-rhythm",
+      "label": "Fake-unscripted scaffolding",
+      "phrase": "So yeah",
+      "regex": "(?<!\\w)So\\ yeah(?!\\w)"
+    },
+    {
+      "id": "M-03",
+      "category": "imagery-and-metaphor",
+      "label": "Honest dashboards",
+      "phrase": "get honest",
+      "regex": "(?<!\\w)get\\ honest(?!\\w)"
+    },
+    {
+      "id": "M-03",
+      "category": "imagery-and-metaphor",
+      "label": "Honest dashboards",
+      "phrase": "tell the truth",
+      "regex": "(?<!\\w)tell\\ the\\ truth(?!\\w)"
+    },
+    {
+      "id": "M-03",
+      "category": "imagery-and-metaphor",
+      "label": "Honest dashboards",
+      "phrase": "reveal",
+      "regex": "(?<!\\w)reveal(?!\\w)"
+    },
+    {
+      "id": "C-01",
+      "category": "substance",
+      "label": "Importance puffery",
+      "phrase": "marks a pivotal moment",
+      "regex": "(?<!\\w)marks\\ a\\ pivotal\\ moment(?!\\w)"
+    },
+    {
+      "id": "C-01",
+      "category": "substance",
+      "label": "Importance puffery",
+      "phrase": "a significant shift",
+      "regex": "(?<!\\w)a\\ significant\\ shift(?!\\w)"
+    },
+    {
+      "id": "C-09",
+      "category": "substance",
+      "label": "Canned notability",
+      "phrase": "featured in top outlets",
+      "regex": "(?<!\\w)featured\\ in\\ top\\ outlets(?!\\w)"
+    },
+    {
+      "id": "C-09",
+      "category": "substance",
+      "label": "Canned notability",
+      "phrase": "widely recognized",
+      "regex": "(?<!\\w)widely\\ recognized(?!\\w)"
+    },
+    {
+      "id": "C-10",
+      "category": "substance",
+      "label": "Superficial balance",
+      "phrase": "however",
+      "regex": "(?<!\\w)however(?!\\w)"
+    },
+    {
+      "id": "C-11",
+      "category": "substance",
+      "label": "Advice with no steps",
+      "phrase": "optimize",
+      "regex": "(?<!\\w)optimize(?!\\w)"
+    },
+    {
+      "id": "C-11",
+      "category": "substance",
+      "label": "Advice with no steps",
+      "phrase": "be strategic",
+      "regex": "(?<!\\w)be\\ strategic(?!\\w)"
+    },
+    {
+      "id": "C-11",
+      "category": "substance",
+      "label": "Advice with no steps",
+      "phrase": "stay consistent",
+      "regex": "(?<!\\w)stay\\ consistent(?!\\w)"
+    },
+    {
+      "id": "C-12",
+      "category": "substance",
+      "label": "Hollow promises",
+      "phrase": "Everything you need to know",
+      "regex": "(?<!\\w)Everything\\ you\\ need\\ to\\ know(?!\\w)"
+    },
+    {
+      "id": "C-12",
+      "category": "substance",
+      "label": "Hollow promises",
+      "phrase": "the ultimate guide",
+      "regex": "(?<!\\w)the\\ ultimate\\ guide(?!\\w)"
+    },
+    {
+      "id": "B-01",
+      "category": "chatbot-residue",
+      "label": "Assistant openers",
+      "phrase": "Certainly",
+      "regex": "(?<!\\w)Certainly(?!\\w)"
+    },
+    {
+      "id": "B-01",
+      "category": "chatbot-residue",
+      "label": "Assistant openers",
+      "phrase": "Absolutely",
+      "regex": "(?<!\\w)Absolutely(?!\\w)"
+    },
+    {
+      "id": "B-01",
+      "category": "chatbot-residue",
+      "label": "Assistant openers",
+      "phrase": "Great question",
+      "regex": "(?<!\\w)Great\\ question(?!\\w)"
+    },
+    {
+      "id": "B-01",
+      "category": "chatbot-residue",
+      "label": "Assistant openers",
+      "phrase": "Of course",
+      "regex": "(?<!\\w)Of\\ course(?!\\w)"
+    },
+    {
+      "id": "B-02",
+      "category": "chatbot-residue",
+      "label": "Sycophancy",
+      "phrase": "You're absolutely right",
+      "regex": "(?<!\\w)You're\\ absolutely\\ right(?!\\w)"
+    },
+    {
+      "id": "B-02",
+      "category": "chatbot-residue",
+      "label": "Sycophancy",
+      "phrase": "what a great idea",
+      "regex": "(?<!\\w)what\\ a\\ great\\ idea(?!\\w)"
+    },
+    {
+      "id": "B-02",
+      "category": "chatbot-residue",
+      "label": "Sycophancy",
+      "phrase": "I love this",
+      "regex": "(?<!\\w)I\\ love\\ this(?!\\w)"
+    },
+    {
+      "id": "B-03",
+      "category": "chatbot-residue",
+      "label": "Offer to do more",
+      "phrase": "Would you like me to",
+      "regex": "(?<!\\w)Would\\ you\\ like\\ me\\ to(?!\\w)"
+    },
+    {
+      "id": "B-05",
+      "category": "chatbot-residue",
+      "label": "Placeholder text",
+      "phrase": "[Your Name]",
+      "regex": "(?<!\\w)\\[Your\\ Name\\](?!\\w)"
+    },
+    {
+      "id": "B-05",
+      "category": "chatbot-residue",
+      "label": "Placeholder text",
+      "phrase": "[Company]",
+      "regex": "(?<!\\w)\\[Company\\](?!\\w)"
+    },
+    {
+      "id": "B-05",
+      "category": "chatbot-residue",
+      "label": "Placeholder text",
+      "phrase": "[insert statistic]",
+      "regex": "(?<!\\w)\\[insert\\ statistic\\](?!\\w)"
+    },
+    {
+      "id": "B-06",
+      "category": "chatbot-residue",
+      "label": "AI disclaimers",
+      "phrase": "As an AI",
+      "regex": "(?<!\\w)As\\ an\\ AI(?!\\w)"
+    },
+    {
+      "id": "B-07",
+      "category": "chatbot-residue",
+      "label": "Source hedging",
+      "phrase": "specific details are limited",
+      "regex": "(?<!\\w)specific\\ details\\ are\\ limited(?!\\w)"
+    },
+    {
+      "id": "B-07",
+      "category": "chatbot-residue",
+      "label": "Source hedging",
+      "phrase": "\"Based on available information\"",
+      "regex": "(?<!\\w)\"Based\\ on\\ available\\ information\"(?!\\w)"
+    },
+    {
+      "id": "B-07",
+      "category": "chatbot-residue",
+      "label": "Source hedging",
+      "phrase": "\"specific details are limited\"",
+      "regex": "(?<!\\w)\"specific\\ details\\ are\\ limited\"(?!\\w)"
+    },
+    {
+      "id": "B-08",
+      "category": "chatbot-residue",
+      "label": "Citation debris",
+      "phrase": "Leftover markers like [1]",
+      "regex": "(?<!\\w)Leftover\\ markers\\ like\\ \\[1\\](?!\\w)"
+    },
+    {
+      "id": "B-08",
+      "category": "chatbot-residue",
+      "label": "Citation debris",
+      "phrase": "contentReference",
+      "regex": "(?<!\\w)contentReference(?!\\w)"
+    },
+    {
+      "id": "B-08",
+      "category": "chatbot-residue",
+      "label": "Citation debris",
+      "phrase": "oaicite",
+      "regex": "(?<!\\w)oaicite(?!\\w)"
+    },
+    {
+      "id": "B-08",
+      "category": "chatbot-residue",
+      "label": "Citation debris",
+      "phrase": "turn0search0",
+      "regex": "(?<!\\w)turn0search0(?!\\w)"
+    },
+    {
+      "id": "L-02",
+      "category": "social-media-and-linkedin",
+      "label": "Hook formulas",
+      "phrase": "Unpopular opinion",
+      "regex": "(?<!\\w)Unpopular\\ opinion(?!\\w)"
+    },
+    {
+      "id": "L-08",
+      "category": "social-media-and-linkedin",
+      "label": "Thread markers",
+      "phrase": "A thread",
+      "regex": "(?<!\\w)A\\ thread(?!\\w)"
+    },
+    {
+      "id": "L-13",
+      "category": "social-media-and-linkedin",
+      "label": "Comment slop",
+      "phrase": "Great insights",
+      "regex": "(?<!\\w)Great\\ insights(?!\\w)"
+    },
+    {
+      "id": "L-13",
+      "category": "social-media-and-linkedin",
+      "label": "Comment slop",
+      "phrase": "So true",
+      "regex": "(?<!\\w)So\\ true(?!\\w)"
+    }
+  ]
+}

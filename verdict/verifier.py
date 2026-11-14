@@ -14,6 +14,10 @@ Claim kinds added here (v0.1, the document/report vertical):
                   anything unlisted; unlisted means INCONCLUSIVE, never executed)
   diff_touches  — the paths the AI says it changed must actually appear in the
                   git diff against a base ref
+  slop_density  — a paragraph must NOT hit N distinct AI-tell patterns; one
+                  phrase is normal, three in one paragraph is slop
+  tests_actually_prove — the AI must not make tests green by deleting/skipping
+                  them, or by changing code with no test change at all
 
 Scoring: reverify's ``summarize`` gives unknown kinds a flat 0.3. ``rescore``
 applies verdict's own weight table (this is the product's rule set, so it lives
@@ -22,7 +26,9 @@ here, not upstream).
 
 from __future__ import annotations
 
+import fnmatch
 import hashlib
+import json
 import os
 import re
 import shutil
@@ -47,6 +53,8 @@ TEXT_KINDS = (
     "file_exists",
     "command_succeeds",
     "diff_touches",
+    "slop_density",
+    "tests_actually_prove",
 )
 
 # How much a claim says when it verifies. Higher = harder to satisfy by accident.
@@ -58,7 +66,31 @@ _GATE_WEIGHTS = {
     "file_exists": 0.20,
     "command_succeeds": 0.60,  # a test really ran; the strongest everyday claim
     "diff_touches": 0.50,
+    "slop_density": 0.65,       # density, not a single word: low false-positive rate
+    "tests_actually_prove": 0.70,
 }
+
+DEFAULT_TEST_GLOBS = (
+    "test_*.py", "*_test.py", "*.test.ts", "*.spec.ts", "*.test.js", "*.spec.js",
+    "*_test.go", "*Test.java", "tests/*", "__tests__/*", "*.feature",
+)
+SKIP_MARKERS = re.compile(
+    r"\.skip\(|\.only\(|\bxit\(|\bxdescribe\(|@pytest\.mark\.skip|it\.skip|"
+    r"test\.skip|--no-verify|core\.hooksPath|\bTODO:\s*skip\b"
+)
+
+
+def _is_test_path(path: str, globs: Sequence[str]) -> bool:
+    base = os.path.basename(path)
+    return any(fnmatch.fnmatch(path, g) or fnmatch.fnmatch(base, g) for g in globs)
+
+
+def _load_slop_preset(name: str) -> List[Dict[str, Any]]:
+    if name != "slop-120":
+        raise ClaimError(f"unknown slop preset {name!r} (available: slop-120)")
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "slop_patterns.json")
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)["patterns"]
 
 # Commands verdict will execute out of the box. Anything else is INCONCLUSIVE
 # until a team allow-lists it. Entries are argv prefixes.
@@ -343,6 +375,120 @@ class GateVerifier(Verifier):
         if missing:
             return REFUTED, evidence, f"claimed paths absent from the diff: {', '.join(missing)}"
         return VERIFIED, evidence, f"diff touches all {len(paths)} claimed path(s)"
+
+    # -- density and anti-laziness gates -------------------------------------
+
+    def _check_slop_density(self, p: Dict[str, Any]):
+        """Claim: no paragraph hits >= min_hits distinct AI-tell patterns.
+
+        A single "delve" is normal prose. Three different tells in one paragraph
+        is what actually reads as generated. Hits are counted by pattern id, so
+        several phrases from the same catalogue entry only count once.
+        """
+        preset = p.get("preset")
+        if preset:
+            entries = _load_slop_preset(str(preset))
+        else:
+            raw = p.get("patterns") or []
+            entries = [{"id": f"P-{i}", "regex": str(x)} for i, x in enumerate(raw)]
+        if not entries:
+            raise ClaimError("slop_density needs 'preset' or a non-empty 'patterns' list")
+        min_hits = int(p.get("min_hits", 3))
+        if min_hits < 1:
+            raise ClaimError("min_hits must be >= 1")
+
+        compiled: List[Tuple[str, Any]] = []
+        for e in entries:
+            try:
+                compiled.append((str(e.get("id", "?")), re.compile(str(e["regex"]), re.I)))
+            except (re.error, KeyError) as exc:
+                raise ClaimError(f"bad slop pattern {e.get('id', '?')}: {exc}")
+
+        paragraphs = re.split(r"\n\s*\n", self._text())
+        findings = []
+        for i, para in enumerate(paragraphs):
+            ids = sorted({pid for pid, rx in compiled if rx.search(para)})
+            if ids:
+                findings.append({
+                    "index": i,
+                    "hits": len(ids),
+                    "ids": ids[:12],
+                    "excerpt": para.strip()[:120],
+                })
+        worst = max((f["hits"] for f in findings), default=0)
+        evidence: Dict[str, Any] = {
+            "preset": str(preset) if preset else "custom",
+            "patterns": len(compiled),
+            "paragraphs": len(paragraphs),
+            "min_hits": min_hits,
+            "max_hits": worst,
+            "findings": findings[:5],
+        }
+        if worst >= min_hits:
+            return REFUTED, evidence, f"{worst} distinct AI-tell patterns in one paragraph (limit {min_hits})"
+        return VERIFIED, evidence, f"max {worst} distinct patterns in a paragraph, below {min_hits}"
+
+    def _check_tests_actually_prove(self, p: Dict[str, Any]):
+        """Claim: tests were not made green by tampering or by going untouched.
+
+        Red flags, from the git diff against ``base``: a deleted test file, a
+        newly added skip/.only marker, or code changed with no test file changed.
+        """
+        base = str(p.get("base", "HEAD"))
+        require = bool(p.get("require_test_change", True))
+        globs = list(p.get("test_globs") or DEFAULT_TEST_GLOBS)
+        git = shutil.which("git")
+        evidence: Dict[str, Any] = {"base": base, "require_test_change": require}
+        if git is None:
+            return INCONCLUSIVE, evidence, "git is not available"
+
+        def diff(*extra: str):
+            return subprocess.run(
+                [git, "-C", self.base_dir, "diff", *extra, base],
+                shell=False, timeout=30, capture_output=True,
+            )
+
+        try:
+            named = diff("--name-status")
+            patch = diff("-U0")
+        except (subprocess.TimeoutExpired, OSError) as exc:
+            return INCONCLUSIVE, evidence, f"git diff failed: {exc}"
+        if named.returncode != 0 or patch.returncode != 0:
+            return INCONCLUSIVE, evidence, "git diff failed (not a repo, or bad base?)"
+
+        changed: List[Tuple[str, str]] = []
+        for line in named.stdout.decode("utf-8", "replace").splitlines():
+            parts = line.split("\t")
+            if len(parts) >= 2:
+                changed.append((parts[0].strip(), parts[-1].strip()))
+        deleted_tests = [f for s, f in changed if s.startswith("D") and _is_test_path(f, globs)]
+        tests_changed = [f for s, f in changed if not s.startswith("D") and _is_test_path(f, globs)]
+        code_changed = [f for s, f in changed if not _is_test_path(f, globs)]
+        skip_hits = [
+            {"line": m.group(1).strip()[:120]}
+            for m in re.finditer(r"^\+(?!\+\+)(.*)$", patch.stdout.decode("utf-8", "replace"), re.M)
+            if SKIP_MARKERS.search(m.group(1))
+        ]
+        evidence.update({
+            "changed_count": len(changed),
+            "code_changed": code_changed[:20],
+            "tests_changed": tests_changed[:20],
+            "deleted_tests": deleted_tests,
+            "skip_markers": skip_hits[:10],
+        })
+        if not changed:
+            return INCONCLUSIVE, evidence, "nothing changed against the base ref"
+
+        flags = []
+        if deleted_tests:
+            flags.append(f"deleted test file(s): {', '.join(deleted_tests)}")
+        if skip_hits:
+            flags.append(f"{len(skip_hits)} new skip/.only marker(s) in the diff")
+        if require and code_changed and not tests_changed:
+            flags.append("code changed with no test file changed")
+        if flags:
+            return REFUTED, evidence, "; ".join(flags)
+        return VERIFIED, evidence, f"{len(tests_changed)} test file(s) changed, no tampering markers"
 
     # -- scoring ------------------------------------------------------------
 

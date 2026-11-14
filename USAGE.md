@@ -1,7 +1,7 @@
 # Usage
 
 ```bash
-pip install verdict-gate            # from PyPI
+pip install ai-verdict            # from PyPI
 # or, from a checkout:
 pip install -e ".[dev]"
 pytest verdict/tests reverify/tests -q     # 345 passed, 55 skipped
@@ -22,7 +22,9 @@ verdict check report.md --claims-file claims.json --base-dir .
   {"kind": "text_absent",  "pattern": "sk-[A-Za-z0-9]{20,}", "regex": true},
   {"kind": "file_exists",  "path": "src/app.py", "min_bytes": 10},
   {"kind": "command_succeeds", "argv": ["pytest", "-q"], "timeout": 300},
-  {"kind": "diff_touches", "paths": ["src/app.py"], "base": "origin/main"}
+  {"kind": "diff_touches", "paths": ["src/app.py"], "base": "origin/main"},
+  {"kind": "slop_density", "preset": "slop-120", "min_hits": 3},
+  {"kind": "tests_actually_prove", "base": "origin/main"}
 ]
 ```
 
@@ -43,13 +45,23 @@ weights:
  "claims": [{"kind": "text_absent", "value": "synergy"}]}
 ```
 
-Shipped: `ai-tells` (24 phrases), `secrets-pii` (9 regexes), `pr-evidence`
-(tests ran, no placeholders).
+Shipped bundles:
+
+| bundle | content | false positives |
+|---|---|---|
+| `ai-tells` v2 | 24 exact phrases (EN+ZH) + `slop_density` | higher — strict house style |
+| `ai-tells-density` | 192 machine-checkable phrases from 59 catalogued patterns, counted per paragraph | low — use this by default |
+| `secrets-pii` | 9 credential / identifier regexes | low |
+| `pr-evidence` | tests ran, no placeholders | low |
+
+The density preset is derived from FeedHive/ai-slop-detector (MIT, 120 patterns);
+`tools/vendor/` keeps the original catalogue and `tools/build_slop_patterns.py`
+regenerates the data. Only phrases a deterministic checker can match are kept.
 
 ## 3. In CI
 
 ```yaml
-- uses: Roloria/verdict-gate@v1
+- uses: Roloria/verdict@v1
   with:
     target: docs/report.md
     rules: ai-tells,secrets-pii
@@ -63,7 +75,7 @@ job summary as a table.
 Or plain CLI:
 
 ```yaml
-- run: pipx install verdict-gate
+- run: pipx install ai-verdict
 - run: verdict check report.md --rules ai-tells,secrets-pii --base-dir .
 ```
 
@@ -88,6 +100,8 @@ Exit codes:
 | `file_exists` | a repo-relative path exists | `path`, `min_bytes` |
 | `command_succeeds` | an allow-listed command exits as expected | `argv` (list, no shell), `cwd`, `timeout`, `expect_exit`, `expect_stdout` |
 | `diff_touches` | the git diff touches the claimed paths | `paths`, `base`, `mode` (`all`/`any`) |
+| `slop_density` | no paragraph hits N **distinct** AI-tell patterns | `preset: slop-120`, `min_hits`, or custom `patterns` |
+| `tests_actually_prove` | tests were not deleted / skipped / left untouched | `base`, `require_test_change`, `test_globs` |
 
 Plus every reverify kind (`bytes_at`, `string_present`, `functions_equiv`, ...).
 
@@ -128,3 +142,32 @@ matters", not as a small number.
   skip). That file is the asset a team eventually pays to keep and audit.
 - `--report gate.html` writes a single-file HTML report — no CDN, no JS
   dependencies. `verdict report run.json --out gate.html` re-renders a saved run.
+
+## Agent surfaces
+
+`SKILL.md` at the repo root is an Agent Skills bundle: an agent can install it
+and gate its own output before reporting done.
+
+```bash
+npx skills add Roloria/verdict --skill ai-verdict
+```
+
+MCP server over stdio (no SDK dependency), two tools: `verify_claims` and
+`list_rules`.
+
+```bash
+ai-verdict-mcp
+# {"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"verify_claims",
+#  "arguments":{"text":"...","rules":"ai-tells-density,secrets-pii"}}}
+```
+
+## Benchmark and self-gate
+
+```bash
+python eval/run.py          # 30 injected-defect cases → eval/RESULTS.md
+verdict check ITERATION-PLAN.md --claims-file .verdict/claims.json
+```
+
+The self-gate asserts the docs exist, no key-shaped strings are tracked, the
+gate suite passes and the benchmark stays green. CI runs it on every push,
+including a negative test that the sloppy example must exit 2.

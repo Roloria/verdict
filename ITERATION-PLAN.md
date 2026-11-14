@@ -1,7 +1,7 @@
 # Iteration plan
 
 Owner: Kevin ｜ Started 2026-09-15 ｜ Upstream: 2akouwu/reverify v0.11.0
-Last updated: 2026-09-22 (M1 + M2 landed)
+Last updated: 2026-11-14 (restart: rename, density gate, anti-laziness gate, agent surfaces, benchmark)
 
 ---
 
@@ -12,11 +12,16 @@ Last updated: 2026-09-22 (M1 + M2 landed)
 | M0 fork + vertical slice | ✓ 2026-09-15 |
 | M1 code-domain gates + ledger | ✓ 2026-09-22 |
 | M2 rule bundles + HTML report | ✓ 2026-09-22 |
-| M3 CI + distribution | next (9/23–9/28) |
-| M4 content vertical + launch | 10/6–10/19 |
+| M3 CI + distribution (code) | ✓ 2026-09-23 — **publishing still pending** |
+| M3.5 restart | ✓ 2026-11-14 |
+| M4 content vertical + launch | in progress |
 | M5 team tier | only after M4 shows pull |
 
-Tests: **345 passed / 55 skipped** (314 upstream + 31 verdict).
+Tests: **364 passed / 55 skipped** (314 upstream + 50 verdict).
+
+**Still the blocker**: nothing is published. `verdict-gate` was taken on PyPI on
+11/10, so the package is now `ai-verdict`. PyPI trusted publisher + `v0.12.0`
+tag + Marketplace release are one-time manual steps in RELEASE.md.
 
 ```bash
 pip install -e ".[dev]"
@@ -92,10 +97,10 @@ it. Document it, do not "fix" it by inflating weights.
 
 Two clear days, then low bandwidth. Order by what unblocks strangers:
 
-- [x] `action.yml` — composite action: setup-python → `pip install verdict-gate`
+- [x] `action.yml` — composite action: setup-python → `pip install ai-verdict`
       → run → job-summary table + `exit-code` / `information` / `grounded`
       outputs. **9/23** (Marketplace listing still needs a tag, see RELEASE.md)
-- [x] dist renamed `reverify` → `verdict-gate` (v0.12.0). `reverify` /
+- [x] dist renamed `reverify` → `ai-verdict` (v0.12.0). `reverify` /
       `reverify-mcp` console scripts kept for upstream compatibility.
       `publish-pypi.yml` added (OIDC trusted publishing, no token in repo).
       **9/23** — actual upload needs the PyPI publisher configured once.
@@ -152,7 +157,7 @@ Do not build before ~20 outside stars or 3 teams asking.
 
 ## 5. Next actions, in order
 
-1. **Needs you (one-time, ~10 min):** claim `verdict-gate` on PyPI + add the
+1. **Needs you (one-time, ~10 min):** claim `ai-verdict` on PyPI + add the
    trusted publisher, then `git tag v0.12.0 && git push origin v0.12.0`.
    Steps in [RELEASE.md](RELEASE.md). Without it the action cannot install.
 2. Publish the release to Marketplace and move the `v1` floating tag.
@@ -164,9 +169,50 @@ Do not build before ~20 outside stars or 3 teams asking.
 
 ```bash
 verdict check ITERATION-PLAN.md --claims-file .verdict/claims.json --base-dir .
-# 5/5 verified, information 1.65, grounded_score 1.0, exit 0
+# 9/9 verified, information 2.135, grounded_score 1.0, exit 0
 ```
 
-Claims: the docs exist, no key-shaped strings in tracked docs, and
-`pytest -q verdict/tests` really passes. Also enforced in CI (`.github/workflows/verdict.yml`),
-including a negative test — the sloppy sample must exit 2.
+Claims: the docs, SKILL.md, benchmark results and slop preset exist; no
+key-shaped strings in tracked docs; the gate suite and the benchmark both really
+run. Also enforced in CI (`.github/workflows/verdict.yml`), including a negative
+test — the sloppy sample must exit 2.
+
+---
+
+## 7. Restart, 2026-11-14
+
+Triggered by: 7 weeks idle, `verdict-gate` name taken, and NVIDIA / Alibaba /
+Cloudflare moving into verification and quality gates.
+
+- [x] **Rename** to `ai-verdict` (pyproject, action, USAGE, RELEASE, plan).
+      Repo stays `Roloria/verdict`; CLI stays `verdict`.
+- [x] **Version fix**: `verdict/__init__.py` 0.1.0 → 0.12.0, asserted by a test.
+- [x] **`slop_density` gate** — 192 machine-checkable phrases / 59 ids derived
+      from FeedHive's 120 patterns (MIT), vendored in `tools/vendor/` with a
+      rebuild script. Counts distinct pattern ids per paragraph; one phrase is
+      normal, `min_hits` (default 3) in one paragraph is REFUTED.
+- [x] **`ai-tells-density` bundle** — low-false-positive default. `ai-tells` v2
+      keeps the strict exact-phrase list plus a density claim.
+- [x] **`tests_actually_prove` gate** — red flags on deleted tests, new
+      `.skip` / `.only` / `@pytest.mark.skip` markers, and code changed with no
+      test change. The sharpest anti-laziness check so far.
+- [x] **`SKILL.md`** — Agent Skills bundle at repo root for skills.sh.
+- [x] **MCP server** — `ai-verdict-mcp`, stdio JSON-RPC, tools
+      `verify_claims` / `list_rules`, no SDK dependency.
+- [x] **Benchmark** — 30 injected-defect cases, `eval/run.py` →
+      `eval/RESULTS.md`. precision 1.000 / recall 1.000 / F1 1.000, 0 false
+      accepts, 0 false alarms. A regression tripwire, not a general accuracy
+      claim.
+- [x] **Pages workflow** — publishes `examples/gate.html` as a live sample.
+- [x] Self-gate extended to 9 claims.
+
+### Remaining, in order
+
+1. **Needs Kevin (~10 min)**: claim `ai-verdict` on PyPI, add trusted
+   publisher, `git tag v0.12.0 && git push origin v0.12.0`, Marketplace release,
+   move `v1`. See RELEASE.md.
+2. `npx skills add Roloria/verdict --skill ai-verdict` — verify the skill
+   installs (needs the repo public, which it is).
+3. `citation_resolves` / `number_matches_source` — the docs vertical.
+4. Launch post with the demo + benchmark numbers.
+5. Team tier — only after pull.
