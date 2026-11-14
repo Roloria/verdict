@@ -144,7 +144,7 @@ ID regex firing on badge URLs.
 
 ## Docs
 
-[USAGE.md](USAGE.md) · [VISION.md](VISION.md) · [ITERATION-PLAN.md](ITERATION-PLAN.md) · [SKILL.md](SKILL.md) · [RELEASE.md](RELEASE.md) · [ATTRIBUTION.md](ATTRIBUTION.md)
+[USAGE.md](USAGE.md) · [VISION.md](VISION.md) · [ITERATION-PLAN.en.md](ITERATION-PLAN.en.md) · [SKILL.md](SKILL.md) · [RELEASE.md](RELEASE.md) · [ATTRIBUTION.md](ATTRIBUTION.md)
 
 License: MIT. Upstream reverify (MIT) and AI-tell patterns from
 FeedHive/ai-slop-detector (MIT) are credited in ATTRIBUTION.md.

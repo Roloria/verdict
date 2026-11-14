@@ -134,6 +134,6 @@ precision / recall / F1 = 1.000 / 1.000 / 1.000，0 漏放、0 误报，按缺�
 
 ## 文档
 
-[USAGE.md](USAGE.md) · [VISION.md](VISION.md) · [ITERATION-PLAN.md](ITERATION-PLAN.md) · [SKILL.md](SKILL.md) · [RELEASE.md](RELEASE.md) · [ATTRIBUTION.md](ATTRIBUTION.md)
+[USAGE.md](USAGE.md) · [VISION.md](VISION.md) · [ITERATION-PLAN.md](ITERATION-PLAN.md)（[English](ITERATION-PLAN.en.md)） · [SKILL.md](SKILL.md) · [RELEASE.md](RELEASE.md) · [ATTRIBUTION.md](ATTRIBUTION.md)
 
 License: MIT. 上游 reverify (MIT)、AI 味模式 FeedHive/ai-slop-detector (MIT) 的归属见 ATTRIBUTION.md。

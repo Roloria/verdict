@@ -15,6 +15,7 @@
   {"kind": "file_exists", "path": "verdict/propose.py", "min_bytes": 1000, "note": "claim proposal ships"},
   {"kind": "file_exists", "path": "verdict/release.py", "min_bytes": 1000, "note": "release preflight ships"},
   {"kind": "file_exists", "path": "tools/publish.sh", "min_bytes": 500, "note": "one-command release ships"},
+  {"kind": "file_exists", "path": "ITERATION-PLAN.en.md", "min_bytes": 2000, "note": "the English iteration plan ships"},
   {"kind": "command_succeeds", "argv": ["pytest", "-q", "verdict/tests"], "timeout": 300, "note": "the gate suite passes"},
   {"kind": "command_succeeds", "argv": ["python", "eval/run.py"], "timeout": 120, "note": "the benchmark stays green"}
 ]
