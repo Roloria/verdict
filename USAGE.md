@@ -178,8 +178,10 @@ matters", not as a small number.
 
 - Every run appends one JSON line to `.verdict/ledger.jsonl` (`--no-ledger` to
   skip). That file is the asset a team eventually pays to keep and audit.
-- `--report gate.html` writes a single-file HTML report — no CDN, no JS
-  dependencies. `verdict report run.json --out gate.html` re-renders a saved run.
+- `--report gate.html` writes a single-file **Chinese** HTML report — no CDN, no
+  JS dependencies. `verdict report run.json --out gate.html` re-renders a saved
+  run. Only the presentation layer is translated: verdict values and `--json`
+  output stay English for CI and scripts.
 
 ## Agent surfaces
 

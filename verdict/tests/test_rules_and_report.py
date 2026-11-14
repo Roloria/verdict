@@ -121,8 +121,12 @@ def test_report_renders_and_escapes(tmp_path):
     out = tmp_path / "gate.html"
     render_file(report, str(out), target="report.md", rules="ai-tells")
     html = out.read_text(encoding="utf-8")
-    assert "verdict · gate report" in html
-    assert "REFUTED" in html
+    assert "verdict · 输出质量闸门报告" in html
+    assert "已驳回" in html
+    assert "闸门结论" in html
+    assert "复现命令：" in html
+    assert "gate report" not in html
+    assert ">REFUTED<" not in html
     assert "<script>" not in html  # escaped
     assert "&lt;script&gt;" in html
     assert "https://" not in html  # no external resources
@@ -140,3 +144,29 @@ def test_report_from_saved_json(tmp_path):
     finally:
         sys.argv = old
     assert (tmp_path / "g.html").is_file()
+
+
+def test_report_translates_gate_details():
+    from verdict.report import render, _display_detail
+
+    assert _display_detail("found 2 occurrence(s) that must not be there") == "出现 2 处本不该出现的内容"
+    assert _display_detail("absent as claimed") == "符合断言：未出现"
+    combined = _display_detail("deleted test file(s): a.py; code changed with no test file changed")
+    assert "删除了测试文件" in combined and "修改了代码但没有" in combined and "；" in combined
+
+    page = render({
+        "results": [{
+            "kind": "text_absent", "verdict": "REFUTED", "weight": 0.4, "note": "测试",
+            "detail": "found 1 occurrence(s) that must not be there",
+            "evidence": {"occurrences": 1, "needle": "game changer"},
+        }],
+        "receipt": {"replay": "verdict check x", "generated": "2026-11-15T00:00:00Z"},
+        "verified": 0, "total_claims": 1, "refuted": 1, "inconclusive": 0,
+        "information": 0, "min_information": 1, "grounded_score": 0,
+        "informative": False, "grounded": False,
+    }, target="报告.md", rules="ai-tells")
+    assert "出现 1 处本不该出现的内容" in page
+    assert "出现次数=1" in page
+    assert "未通过" in page
+    assert "规则包：ai-tells" in page
+    assert "found 1 occurrence" not in page
