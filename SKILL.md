@@ -37,6 +37,8 @@ verdict rules list
 
 ## Workflow
 
+In a fresh repository, run `verdict init` first — it writes a working `.verdict/` setup and a CI workflow. Add `--sarif findings.sarif` when the run should feed GitHub code scanning.
+
 1. **Write the artifact** to a file. verdict checks files, not chat messages.
 2. **Run a rule bundle**, or write claim JSON for the specific assertions:
 

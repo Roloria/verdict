@@ -183,6 +183,39 @@ matters", not as a small number.
   run. Only the presentation layer is translated: verdict values and `--json`
   output stay English for CI and scripts.
 
+## 零配置起步
+
+```bash
+cd any-repo
+verdict init                  # 生成 .verdict/ 配置、GitHub Actions workflow、pre-commit 脚本
+verdict check README.md --claims-file .verdict/claims.json
+```
+
+`init` 自动探测测试框架（Python / Node / Rust / Go），把测试命令写进 claims 和
+白名单；默认不覆盖已有文件，`--force` 才覆盖。不改动 `.git/`，钩子脚本放在
+`.verdict/pre-commit.sh` 由你自行安装。
+
+## CI / 审计输出
+
+```bash
+verdict check report.md --claims-file claims.json --sarif findings.sarif
+```
+
+SARIF 2.1.0：仅 `REFUTED`（error）与 `INCONCLUSIVE`（warning）成为 finding，
+带 `partialFingerprints` 去重和证据摘要；`github/codeql-action/upload-sarif`
+可直接上传。`init` 生成的 workflow 已包含上传步骤。
+
+## 校准 / 可信度
+
+```bash
+python eval/run.py          # 30 例回归绊线 → eval/RESULTS.md
+python eval/calibrate.py    # 11 份外部真实 README → eval/CALIBRATION.md
+```
+
+校准脚本运行时下载外部文档并缓存到 `eval/.cache/`（gitignored），不把第三方
+全文提交进仓库；离线时复用缓存。它同时测量真实文档上的误报率与注入缺陷的
+检出率。当前结果：误报 0/11，注入检出 22/22。
+
 ## 语言切换 / Language
 
 `zh-CN` 和 `en` 都支持。新增一种语言只需在 `verdict/i18n.py` 加一份消息表、

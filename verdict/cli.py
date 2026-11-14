@@ -22,8 +22,10 @@ from reverify.cli import load_input_bytes
 from reverify.verifier import Claim
 
 from . import __version__
-from .i18n import LANGS, mark_label, set_lang, t, translate_detail
+from .i18n import LANGS, get_lang, mark_label, set_lang, t, translate_detail
+from .init import initialize, print_init
 from .report import load_json, render_file
+from .sarif import write_sarif
 from .rules import add_bundle, available, load as load_bundle, load_many
 from .verifier import DEFAULT_ALLOWLIST, GateVerifier, TEXT_KINDS
 
@@ -122,6 +124,11 @@ def cmd_check(args: argparse.Namespace) -> None:
         if not args.json:
             print(t("cli.report", path=args.report))
 
+    if getattr(args, "sarif", ""):
+        write_sarif(report, args.sarif, target=args.target)
+        if not args.json:
+            print(t("cli.sarif", path=args.sarif))
+
     fail_on = {s.strip() for s in str(args.fail_on).split(",") if s.strip()}
     if args.strict:
         fail_on.add("inconclusive")
@@ -156,6 +163,10 @@ def cmd_check(args: argparse.Namespace) -> None:
             },
         )
     sys.exit(code)
+
+
+def cmd_init(args: argparse.Namespace) -> None:
+    print_init(initialize(base_dir=args.base_dir, lang=get_lang(), force=args.force))
 
 
 def cmd_kinds(args: argparse.Namespace) -> None:
@@ -238,7 +249,13 @@ def main() -> None:
     c.add_argument("--no-ledger", action="store_true", help="do not write the ledger")
     c.add_argument("--json", action="store_true")
     c.add_argument("--verbose", action="store_true", help="list passing claims too")
+    c.add_argument("--sarif", help="also write SARIF 2.1.0 findings for GitHub code scanning")
     c.set_defaults(func=cmd_check)
+
+    ini = sub.add_parser("init", parents=[common], help="bootstrap .verdict/ config + CI in any repo")
+    ini.add_argument("--base-dir", default=".")
+    ini.add_argument("--force", action="store_true", help="overwrite existing files")
+    ini.set_defaults(func=cmd_init)
 
     k = sub.add_parser("kinds", parents=[common], help="list claim kinds")
     k.set_defaults(func=cmd_kinds)

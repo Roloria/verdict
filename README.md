@@ -28,8 +28,10 @@ pip install ai-verdict            # 发布前：pip install -e ".[dev]"
 verdict kinds                     # 查看全部闸门类型
 verdict rules list                # 查看规则包
 
+verdict init                      # 任意仓库零配置起步：配置 + CI + 钩子
 verdict check report.md --rules ai-tells-density,secrets-pii
-verdict check report.md --rules ai-tells-density --report gate.html
+verdict check report.md --rules ai-tells-density --report gate.html \
+  --sarif findings.sarif        # 供 GitHub code scanning 上传
 ```
 
 退出码：`0` 通过 · `2` 有断言被驳回 · `3` 证据太薄 · `4` 有结论未定（`--strict`）。
@@ -113,7 +115,11 @@ verdict scope --mode merge-base --base main --to HEAD --delegate --json
 
 `python eval/run.py` → [eval/RESULTS.md](eval/RESULTS.md)：30 个注入缺陷样例，
 precision / recall / F1 = 1.000 / 1.000 / 1.000，0 漏放、0 误报，按缺陷类型分解。
-定位是回归绊线，不是通用准确率声明。
+
+自造用例分数完美说明不了真实表现，所以另有 [CALIBRATION.md](eval/CALIBRATION.md)：
+拉取 11 份外部真实开源 README（不入库全文，运行时缓存），默认规则包
+**误报 0/11**，向每份文档注入已知缺陷后 **检出 22/22**。这一步曾抓出并修掉
+一个真实误报（18 位身份证规则命中 README 徽章 URL 里的长数字串）。
 
 ## 当前状态
 

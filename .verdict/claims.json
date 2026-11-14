@@ -9,6 +9,9 @@
   {"kind": "file_exists", "path": "verdict/scope.py", "min_bytes": 2000, "note": "the deterministic scope layer ships"},
   {"kind": "file_exists", "path": "verdict/i18n.py", "min_bytes": 2000, "note": "the language layer ships"},
   {"kind": "file_exists", "path": "README.en.md", "min_bytes": 1000, "note": "the English README ships"},
+  {"kind": "file_exists", "path": "verdict/init.py", "min_bytes": 1000, "note": "zero-config onboarding ships"},
+  {"kind": "file_exists", "path": "verdict/sarif.py", "min_bytes": 1000, "note": "CI audit export ships"},
+  {"kind": "file_exists", "path": "eval/CALIBRATION.md", "min_bytes": 500, "note": "real-corpus calibration is published"},
   {"kind": "command_succeeds", "argv": ["pytest", "-q", "verdict/tests"], "timeout": 300, "note": "the gate suite passes"},
   {"kind": "command_succeeds", "argv": ["python", "eval/run.py"], "timeout": 120, "note": "the benchmark stays green"}
 ]

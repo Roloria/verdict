@@ -271,3 +271,35 @@ Tests: **67 verdict tests pass**; benchmark still 1.000 / 1.000 / 1.000.
 - `.verdict/config.example.json`, USAGE and both SKILL.md copies updated.
 - Tests: 76 verdict tests (new `test_i18n.py`), bilingual report + CLI + MCP
   switching covered.
+
+---
+
+## 10. Value review + adoption work, 2026-11-15
+
+**Verdict: the feature set is comprehensive; the value is not there yet.**
+Value ≈ real adoption × credible evidence. Both were near zero: 0 stars, nothing
+published, no external users; a hand-written 30-case benchmark scoring 1.000;
+onboarding required writing `claims.json` by hand; CI could only fail a build,
+not feed code scanning.
+
+**Landed this round (highest leverage first):**
+
+| Gap | Fix |
+|---|---|
+| credibility | `eval/calibrate.py` → `eval/CALIBRATION.md`: 11 real external OSS READMEs, fetched at runtime (never committed), **0/11 false alarms, 22/22 injected defects caught** |
+| real quality bug | that calibration found the 18-digit China-ID regex firing on badge URLs in FastAPI / promptfoo READMEs; bounded the pattern in `secrets-pii`, re-ran both suites |
+| onboarding friction | `verdict init` — detects Python/Node/Rust/Go test commands, writes `.verdict/` config + claims + allowlist + scope rules + GitHub Actions workflow + pre-commit script, never overwrites without `--force` |
+| CI/audit depth | `--sarif` → SARIF 2.1.0 with `partialFingerprints`, only REFUTED/INCONCLUSIVE become findings; `init` workflow uploads it |
+
+Tests: **85 verdict tests** (`test_init_sarif.py`, `test_i18n.py`, dual-language
+self-gate 12/12, benchmark unchanged).
+
+**Remaining, ordered by leverage:**
+
+| # | Task | Why |
+|---|---|---|
+| P0 | Publish (needs Kevin): PyPI trusted publisher → `v0.12.0` → Marketplace | nothing else compounds until `pip install ai-verdict` works |
+| P0 | `verdict propose` — deterministically extract verifiable assertions (numbers, paths, API names, command output) from an artifact into a claims draft | completes the missing half of reverify's protocol: an agent may PROPOSE claims, never decide them. Kills the claims.json hand-authoring friction |
+| P1 | PR annotations + diff-only mode (check added lines only) | avoids blocking on historical debt; makes the gate usable on mature repos |
+| P1 | `verdict ledger` query + audit export | turns `.verdict/ledger.jsonl` from a log into the asset a team pays for |
+| P2 | Team tier: private rule sync, report history, SSO | only after pull from P0/P1 |

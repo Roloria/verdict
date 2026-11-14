@@ -93,6 +93,11 @@ MESSAGES: Dict[str, Dict[str, str]] = {
         "zh-CN": "\n另有全部 reverify 类型（bytes_at、string_present、functions_equiv ...）",
         "en": "\nplus every reverify kind (bytes_at, string_present, functions_equiv, ...)",
     },
+    "init.created": {"zh-CN": "已生成 {path}", "en": "created {path}"},
+    "init.skipped": {"zh-CN": "跳过（已存在）{path}", "en": "skipped (exists) {path}"},
+    "init.detected": {"zh-CN": "检测到测试命令：{command}", "en": "detected test command: {command}"},
+    "init.next": {"zh-CN": "下一步：{first}", "en": "next: {first}"},
+    "cli.sarif": {"zh-CN": "SARIF：{path}", "en": "SARIF: {path}"},
     "bool.yes": {"zh-CN": "是", "en": "true"},
     "bool.no": {"zh-CN": "否", "en": "false"},
 }
